@@ -437,11 +437,14 @@ export default async function DashboardPage(): Promise<ReactElement> {
           <p>
             The first word of the question names the kind of answer —{' '}
             <span className="text-primary-900">who</span> a person,{' '}
-            <span className="text-primary-900">where</span> a place,{' '}
-            <span className="text-primary-900">why</span> a reason.
+            <span className="text-primary-900">where</span> a place. The answer often points:{' '}
+            <span className="text-primary-900">this</span>,{' '}
+            <span className="text-primary-900">that</span>,{' '}
+            <span className="text-primary-900">these</span>,{' '}
+            <span className="text-primary-900">those</span>.
           </p>
           <p className="font-bengali" lang="bn">
-            what, when, where, why, who — IELTS Speaking ও Reading-এর প্রশ্ন এগুলো দিয়েই শুরু হয়।
+            what, when, where — এবং উত্তরে this, that, these, those।
           </p>
         </div>
       </section>
