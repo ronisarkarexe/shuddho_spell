@@ -3,12 +3,14 @@ import { QuestionWordsGuide } from '@/components/learning/question-words-guide';
 import { requireUser } from '@/lib/auth/current-user';
 
 /**
- * WH-question words — what, who, when, where, why, how.
+ * WH-question words — what, who, when, where, why, how — and the pointing
+ * words that sit in the answers: this, that, these, those.
  *
  * A **reference**, on the same terms as prepositions next door: nothing here is
  * drilled, marked, or seeded. IELTS Speaking and Reading open most of their
- * questions with these nine words; this is the list a learner reaches for by
- * name.
+ * questions with the nine WH-words; the four pointing words are what a learner
+ * uses to answer them while pointing. Below that sit the sentence words a
+ * learner actually needs to write — something, anyone, wherever, another, it.
  *
  * A Server Component all the way down. There is nothing to fetch.
  */
@@ -31,9 +33,14 @@ export default async function QuestionWordsPage(): Promise<ReactElement> {
           The first word of the question names the kind of answer —{' '}
           <span className="text-primary-900">who</span> a person,{' '}
           <span className="text-primary-900">where</span> a place,{' '}
-          <span className="text-primary-900">when</span> a time,{' '}
-          <span className="text-primary-900">why</span> a reason,{' '}
-          <span className="text-primary-900">what</span> a thing.
+          <span className="text-primary-900">what</span> a thing. The answer often points:{' '}
+          <span className="text-primary-900">this</span>,{' '}
+          <span className="text-primary-900">that</span>,{' '}
+          <span className="text-primary-900">these</span>,{' '}
+          <span className="text-primary-900">those</span>. The same stems write the sentence:{' '}
+          <span className="text-primary-900">something</span>,{' '}
+          <span className="text-primary-900">anyone</span>,{' '}
+          <span className="text-primary-900">wherever</span>.
         </p>
       </header>
 
