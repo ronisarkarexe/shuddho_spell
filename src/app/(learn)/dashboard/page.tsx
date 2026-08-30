@@ -396,6 +396,56 @@ export default async function DashboardPage(): Promise<ReactElement> {
         </div>
       </section>
 
+      {/*
+        Prepositions and question words — the two closed lists a learner looks
+        up by name, on the same shelf as the verb table.
+      */}
+      <section className="card col-span-12 lg:col-span-6">
+        <PanelHeader
+          action={
+            <Link className="text-[11px] text-primary-900" href="/library/prepositions">
+              Open
+            </Link>
+          }
+          note="Grammar reference"
+          title="Prepositions"
+        />
+        <div className="flex flex-col gap-2 p-4 text-muted">
+          <p>
+            The word that sits in front of a noun and names a relationship —{' '}
+            <span className="text-primary-900">on the table</span>,{' '}
+            <span className="text-primary-900">in Bangladesh</span>,{' '}
+            <span className="text-primary-900">to school</span>.
+          </p>
+          <p className="font-bengali" lang="bn">
+            জায়গা, সময়, দিক, কারণ — noun-এর সাথে অন্য word-এর সম্পর্ক।
+          </p>
+        </div>
+      </section>
+
+      <section className="card col-span-12 lg:col-span-6">
+        <PanelHeader
+          action={
+            <Link className="text-[11px] text-primary-900" href="/library/questions">
+              Open
+            </Link>
+          }
+          note="Grammar reference"
+          title="Question words"
+        />
+        <div className="flex flex-col gap-2 p-4 text-muted">
+          <p>
+            The first word of the question names the kind of answer —{' '}
+            <span className="text-primary-900">who</span> a person,{' '}
+            <span className="text-primary-900">where</span> a place,{' '}
+            <span className="text-primary-900">why</span> a reason.
+          </p>
+          <p className="font-bengali" lang="bn">
+            what, when, where, why, who — IELTS Speaking ও Reading-এর প্রশ্ন এগুলো দিয়েই শুরু হয়।
+          </p>
+        </div>
+      </section>
+
       {/* The phoneme matrix — the same component /progress renders for rules. */}
       <section className="card col-span-12">
         <PanelHeader

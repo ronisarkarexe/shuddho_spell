@@ -39,7 +39,9 @@
     "grammar": "Grammar",
     "wordFamilies": "Word families",
     "vocabulary": "Vocabulary",
-    "verbs": "Verb forms"
+    "verbs": "Verb forms",
+    "prepositions": "Prepositions",
+    "questionWords": "Question words"
   },
   "dashboard": {
     "dayOf": "Day {day} of {total}",

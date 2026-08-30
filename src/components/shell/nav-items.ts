@@ -21,13 +21,15 @@ export interface INavItem {
  * wrong" wants their own list, and finding the whole 3,000-word library first
  * is the wrong answer arriving before the right one.
  *
- * `/library/families` and `/library/vocabulary` sit directly under `/library`
- * because they are the same shelf: all three are reference rather than course.
- * The vocabulary list and the verb tables come last of the four because they
- * are the two a learner reaches for by name — they arrive knowing they want a
- * better word, or the past participle of one — while the other two are browsed. `activeHref` matches the
- * longest prefix, so standing on the families screen lights the families item
- * and not its parent — which is what makes two nested items safe to list.
+ * `/library/families`, `/library/vocabulary`, `/library/verbs`,
+ * `/library/prepositions` and `/library/questions` sit directly under
+ * `/library` because they are the same shelf: all of them are reference rather
+ * than course. Vocabulary and verbs come first of the named lists because a
+ * learner arrives knowing they want a better word, or the past participle of
+ * one; the preposition and question-word lists sit after them as the two
+ * closed classes looked up the same way. `activeHref` matches the longest
+ * prefix, so standing on the families screen lights the families item and not
+ * its parent — which is what makes nested items safe to list.
  *
  * The hrefs point at routes Phase 11 and Phase 12 build. That is deliberate and
  * is not scaffolding ahead: a navigation rail with no destinations is not the
@@ -45,6 +47,8 @@ export const NAV_ITEMS: readonly INavItem[] = Object.freeze([
   { href: '/library/families', labelKey: 'wordFamilies', glyph: 'grammar' },
   { href: '/library/vocabulary', labelKey: 'vocabulary', glyph: 'library' },
   { href: '/library/verbs', labelKey: 'verbs', glyph: 'grammar' },
+  { href: '/library/prepositions', labelKey: 'prepositions', glyph: 'grammar' },
+  { href: '/library/questions', labelKey: 'questionWords', glyph: 'grammar' },
   { href: '/progress', labelKey: 'progress', glyph: 'progress' },
   { href: '/exams', labelKey: 'exams', glyph: 'exam' },
 ]);

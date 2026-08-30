@@ -39,7 +39,9 @@
     "grammar": "ব্যাকরণ",
     "wordFamilies": "শব্দপরিবার",
     "vocabulary": "শব্দভাণ্ডার তালিকা",
-    "verbs": "ক্রিয়ার রূপ"
+    "verbs": "ক্রিয়ার রূপ",
+    "prepositions": "অব্যয়",
+    "questionWords": "প্রশ্নশব্দ"
   },
   "dashboard": {
     "dayOf": "{total} দিনের মধ্যে {day} দিন",
