@@ -41,7 +41,8 @@
     "vocabulary": "শব্দভাণ্ডার তালিকা",
     "verbs": "ক্রিয়ার রূপ",
     "prepositions": "অব্যয়",
-    "questionWords": "প্রশ্নশব্দ"
+    "questionWords": "প্রশ্নশব্দ",
+    "gapFill": "শূন্যস্থান"
   },
   "dashboard": {
     "dayOf": "{total} দিনের মধ্যে {day} দিন",
