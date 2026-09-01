@@ -41,7 +41,8 @@
     "vocabulary": "Vocabulary",
     "verbs": "Verb forms",
     "prepositions": "Prepositions",
-    "questionWords": "Question words"
+    "questionWords": "Question words",
+    "gapFill": "Gap-fill"
   },
   "dashboard": {
     "dayOf": "Day {day} of {total}",

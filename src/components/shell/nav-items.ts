@@ -22,14 +22,14 @@ export interface INavItem {
  * is the wrong answer arriving before the right one.
  *
  * `/library/families`, `/library/vocabulary`, `/library/verbs`,
- * `/library/prepositions` and `/library/questions` sit directly under
- * `/library` because they are the same shelf: all of them are reference rather
- * than course. Vocabulary and verbs come first of the named lists because a
- * learner arrives knowing they want a better word, or the past participle of
- * one; the preposition and question-word lists sit after them as the two
- * closed classes looked up the same way. `activeHref` matches the longest
- * prefix, so standing on the families screen lights the families item and not
- * its parent — which is what makes nested items safe to list.
+ * `/library/prepositions`, `/library/questions` and `/library/patterns` sit
+ * directly under `/library` because they are the same shelf: all of them are
+ * reference rather than course. Vocabulary and verbs come first of the named
+ * lists because a learner arrives knowing they want a better word, or the past
+ * participle of one; the preposition, question-word and gap-fill lists sit
+ * after them as the closed charts looked up the same way. `activeHref` matches
+ * the longest prefix, so standing on the families screen lights the families
+ * item and not its parent — which is what makes nested items safe to list.
  *
  * The hrefs point at routes Phase 11 and Phase 12 build. That is deliberate and
  * is not scaffolding ahead: a navigation rail with no destinations is not the
@@ -49,6 +49,7 @@ export const NAV_ITEMS: readonly INavItem[] = Object.freeze([
   { href: '/library/verbs', labelKey: 'verbs', glyph: 'grammar' },
   { href: '/library/prepositions', labelKey: 'prepositions', glyph: 'grammar' },
   { href: '/library/questions', labelKey: 'questionWords', glyph: 'grammar' },
+  { href: '/library/patterns', labelKey: 'gapFill', glyph: 'grammar' },
   { href: '/progress', labelKey: 'progress', glyph: 'progress' },
   { href: '/exams', labelKey: 'exams', glyph: 'exam' },
 ]);

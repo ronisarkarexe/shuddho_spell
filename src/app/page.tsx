@@ -1,5 +1,10 @@
 import Link from 'next/link';
 import { type ReactElement } from 'react';
+import { GrammarPatternDrill } from '@/components/learning/grammar-pattern-drill';
+import {
+  MasterClueTable,
+  WorkedGapExample,
+} from '@/components/learning/grammar-pattern-guide';
 import { VerbDrill } from '@/components/learning/verb-drill';
 import { FormKey, TenseChart } from '@/components/learning/verb-guide';
 import { VocabularyDrill } from '@/components/learning/vocabulary-drill';
@@ -27,19 +32,24 @@ import { MILESTONES, SYLLABUS } from './syllabus';
  * control is done: no images, no web fonts beyond the four the whole product
  * already loads, real headings in order, and every table a real table.
  *
- * **Four** client components now, not one: the signature flow, the dictation
- * demo, the alphabet strip and the letter families. That is a deliberate revision of the budget
- * rather than a slip. All three are the same trade — a marketing page for a
- * *pronunciation* course that can only be read is describing the product
- * instead of being it — and the two alphabet sections ship 26 rows of text and
- * a click handler between them, not a library. All four share `useSpeech`, so
- * each after the first costs almost nothing. The flow is the one real addition
- * — it carries the microphone lifecycle — and it is the section the page is
- * now built around, so it earns it. **Static rendering itself is
- * blocked one level up** — the root layout calls `getLocale()` and mounts
- * `SessionBoundary`, both of which read cookies, and a cookie read opts the
- * whole tree into dynamic rendering. That is a Phase 1 and Phase 3 decision, not
- * one this page can undo, and it is recorded rather than worked around.
+ * **Five** client components now, not one: the signature flow, the dictation
+ * demo, the alphabet strip, the letter families, and the gap-fill decoder.
+ * That is a deliberate revision of the budget rather than a slip. The first
+ * four are the same trade — a marketing page for a *pronunciation* course that
+ * can only be read is describing the product instead of being it — and the
+ * gap-fill section is the other half of the same claim: a course about
+ * sentences whose landing page never lets a visitor *read a blank* is selling
+ * the chart instead of being it. The two alphabet sections ship 26 rows of
+ * text and a click handler between them, not a library. Four of the five share
+ * `useSpeech`, so each after the first costs almost nothing; the decoder shares
+ * none of that and is still cheap — a shuffle over a closed bank, no fetch.
+ * The flow is the one real addition — it carries the microphone lifecycle —
+ * and it is the section the page is now built around, so it earns it. **Static
+ * rendering itself is blocked one level up** — the root layout calls
+ * `getLocale()` and mounts `SessionBoundary`, both of which read cookies, and
+ * a cookie read opts the whole tree into dynamic rendering. That is a Phase 1
+ * and Phase 3 decision, not one this page can undo, and it is recorded rather
+ * than worked around.
  *
  * The error table is the honest core of the pitch: eight mistakes Bengali
  * speakers actually make, named, with the reason. `07-speech-scoring.md` and
@@ -167,6 +177,15 @@ const VOCABULARY_QUESTIONS = 6;
  */
 const VERB_QUESTIONS = 6;
 
+/**
+ * Six gap-fill questions, drawn from a closed bank of patterns.
+ *
+ * The front door is the place to ask "what kind of word fits", not to teach
+ * the whole chart. Sixteen sentences sit in the component; six of them land
+ * here. The rest are behind the sign-in, on the chart itself.
+ */
+const GAP_FILL_QUESTIONS = 6;
+
 export default async function LandingPage(): Promise<ReactElement> {
   /*
    * Three reads, together rather than in turn. Only the first costs a query:
@@ -274,7 +293,7 @@ export default async function LandingPage(): Promise<ReactElement> {
       </Section>
 
       {/*
-        Verb forms — the third and last demo, and the most teachable one.
+        Verb forms — the third demo.
 
         It comes after the vocabulary swap because it is a bigger idea: a swap
         is one word for another, and this is a system with five parts. So the
@@ -306,6 +325,44 @@ export default async function LandingPage(): Promise<ReactElement> {
           <p className="text-muted">
             The full reference — <span className="num">{verbs.totalVerbs}</span> verbs in all five
             forms, the spelling rules, and the eight mistakes that cost the most marks — is inside.
+          </p>
+        </div>
+      </Section>
+
+      {/*
+        Gap-fill clues — the fourth demo, and the one that is only a chart
+        until somebody has to name the hole.
+
+        It sits after the verb forms because it uses them: can + V1, has + V3,
+        by + V-ing are the same five forms the section above just named, now
+        read from the words around a blank rather than from a table. The drill
+        is six sentences; the table is the chart a visitor can screenshot; the
+        worked sentence is the method made visible on one line from an IELTS
+        paper.
+      */}
+      <Section
+        note="Before you guess the word, read the words around the hole. a, many, can, has, are — each one names the kind of word that can sit there. Six sentences, no account, and the pattern behind each answer."
+        title="The blank tells you the word"
+      >
+        <div className="flex flex-col gap-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div id="gap-fill">
+              <GrammarPatternDrill roundSize={GAP_FILL_QUESTIONS} tone="light" />
+            </div>
+            <div className="flex flex-col gap-3">
+              <p className="label">One sentence, taken apart</p>
+              <WorkedGapExample />
+            </div>
+          </div>
+
+          <div>
+            <p className="label mb-3">The clues</p>
+            <MasterClueTable limit={10} />
+          </div>
+
+          <p className="text-muted">
+            The full chart — parts of speech, every pattern, the traps, and how to walk a blank —
+            is inside, next to the prepositions and the verb table.
           </p>
         </div>
       </Section>

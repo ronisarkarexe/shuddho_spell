@@ -1438,6 +1438,16 @@ The guard is a source check rather than a rendering test, and the test says why:
 layout engine, so nothing in this suite can observe a scroll position. What it can hold is that the
 root is out of flow and that `#content` remains the only scrolling region.
 
+**D79 — gap-fill clues are a reference page of writing, not a corpus (user request, 2026-09-01).**
+The IELTS sentence-completion / summary-completion chart — parts of speech, every pattern that
+names the word in a blank, the traps, the four-step walk, one worked sentence — is the same kind
+of object as the preposition list and the WH-word list: a closed page of writing a learner looks
+up by name. Putting it behind a port, a source, a use case and a DTO would be four files to reach
+the same tables, and `content/` is for corpora the build validates. The drill that sits on the
+landing page, the dashboard and the chart itself is a shuffle over sixteen authored sentences
+inside the component; nothing is stored, and there is no endpoint, because a fresh round is not a
+new fact. The chart lives at `/library/patterns`, on the same rail as the other named references.
+
 ### Open — needs the user, not me
 
 **O3 — the 24 flagged transcriptions need a human ear (F9.9).** They are listed by

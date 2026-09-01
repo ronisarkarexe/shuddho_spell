@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { type ReactElement } from 'react';
 import { MasteryMatrix, type IMasteryMatrixCell } from '@/components/data/mastery-matrix';
+import { GrammarPatternDrill } from '@/components/learning/grammar-pattern-drill';
 import { VerbDrill } from '@/components/learning/verb-drill';
 import { VocabularyDrill } from '@/components/learning/vocabulary-drill';
 import { PushPermissionBanner } from '@/components/notifications/push-permission-banner';
@@ -394,6 +395,59 @@ export default async function DashboardPage(): Promise<ReactElement> {
             word that ends the same way.
           </p>
         </div>
+      </section>
+
+      {/*
+        Gap-fill clues — the chart that names the word in a blank.
+
+        Beside a four-step card because they are the same thirty seconds: the
+        drill asks whether the clue is visible, the card says how to look for
+        it. Four questions, not six, for the same reason as the verb card.
+      */}
+      <section className="card col-span-12 lg:col-span-7">
+        <PanelHeader
+          action={
+            <Link className="text-[11px] text-primary-900" href="/library/patterns">
+              The chart
+            </Link>
+          }
+          note="IELTS reading"
+          title="Gap-fill clues"
+        />
+        <div className="p-4">
+          <GrammarPatternDrill roundSize={4} tone="light" />
+        </div>
+      </section>
+
+      <section className="card col-span-12 lg:col-span-5">
+        <PanelHeader
+          action={
+            <Link className="text-[11px] text-primary-900" href="/library/patterns">
+              Open
+            </Link>
+          }
+          note="Four checks"
+          title="How to read a blank"
+        />
+        <ol className="flex list-decimal flex-col gap-2 p-4 pl-8 text-muted">
+          <li>
+            <span className="text-primary-900">In front:</span> a, many, can, has, very, by.
+          </li>
+          <li>
+            <span className="text-primary-900">After:</span> is, are, students, quickly.
+          </li>
+          <li>
+            <span className="text-primary-900">Auxiliary:</span> can → V1. has → V3. is → adjective,
+            V-ing or passive.
+          </li>
+          <li>
+            <span className="text-primary-900">Number:</span> every → singular. many → plural.
+          </li>
+        </ol>
+        <p className="border-t border-hairline px-4 py-3 font-bengali text-muted" lang="bn">
+          ______ are available → blank-এ plural noun। materials for sculpting are not readily
+          available.
+        </p>
       </section>
 
       {/*
