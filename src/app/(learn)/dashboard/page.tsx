@@ -21,7 +21,9 @@ import {
   readWordsPractised,
   readVocabularyDrill,
   readVerbDrill,
+  readFormalInformal,
 } from '@/composition/reads';
+import { FormalInformalExplorer } from '../library/formal-informal/formal-informal-explorer';
 import { requireUser } from '@/lib/auth/current-user';
 import { publicEnv } from '@/lib/env.public';
 import { PractisedWords } from './practised-words';
@@ -31,7 +33,7 @@ import { ReviewTable } from './review-table';
  * The dashboard — one question, "what should I do now", answered above the
  * fold.
  *
- * **Nine reads, issued together, zero N+1.** Each is one use case that returns
+ * **Ten reads, issued together, zero N+1.** Each is one use case that returns
  * its whole answer in one shape; none of them is called per row, and the six
  * run in a single `Promise.all` rather than serially. That is the acceptance
  * criterion for this feature and it is a property of the read path, not of the
@@ -39,7 +41,9 @@ import { ReviewTable } from './review-table';
  * profile, and React's `cache` in `reads.ts` means the second one does not
  * fetch it again. The eighth and ninth — the vocabulary and verb drills — make
  * no query at all: they are compiled corpora and a random pick, and they join
- * the `Promise.all` only so they cannot become serial awaits later.
+ * the `Promise.all` only so they cannot become serial awaits later. The
+ * tenth — informal → formal — is compiled content as well, the first page
+ * of the register list.
  *
  * The page never calls this application's own HTTP API. It goes through the
  * composition root to the same use cases the handlers use — the sweep in
@@ -91,18 +95,29 @@ function toMatrixCells(
 export default async function DashboardPage(): Promise<ReactElement> {
   const user = await requireUser();
 
-  const [dashboard, summary, mastery, activity, reviews, nextExam, practised, vocabulary, verbs] =
-    await Promise.all([
-      readLearnerDashboard(user.userId),
-      readProgressSummary(user.userId),
-      readMasterySnapshot(user.userId),
-      readActivity(user.userId, 7),
-      readDueReviews(user.userId),
-      readNextExam(user.userId),
-      readWordsPractised(user.userId),
-      readVocabularyDrill(VOCABULARY_QUESTIONS),
-      readVerbDrill(VERB_QUESTIONS, true),
-    ]);
+  const [
+    dashboard,
+    summary,
+    mastery,
+    activity,
+    reviews,
+    nextExam,
+    practised,
+    vocabulary,
+    verbs,
+    formalInformal,
+  ] = await Promise.all([
+    readLearnerDashboard(user.userId),
+    readProgressSummary(user.userId),
+    readMasterySnapshot(user.userId),
+    readActivity(user.userId, 7),
+    readDueReviews(user.userId),
+    readNextExam(user.userId),
+    readWordsPractised(user.userId),
+    readVocabularyDrill(VOCABULARY_QUESTIONS),
+    readVerbDrill(VERB_QUESTIONS, true),
+    readFormalInformal(24),
+  ]);
 
   const accuracyPercent = Math.round(summary.overallAccuracy);
   const hasAttempts = summary.itemsReviewed > 0;
@@ -500,6 +515,31 @@ export default async function DashboardPage(): Promise<ReactElement> {
           <p className="font-bengali" lang="bn">
             what, when, where — এবং উত্তরে this, that, these, those।
           </p>
+        </div>
+      </section>
+
+      {/*
+        Informal → formal register, with IPA and Bangla on every word.
+
+        A full-width list rather than a six-question drill: the lesson here is
+        seeing the swap, hearing the accent, and reading the meaning. The same
+        explorer lives on `/library/formal-informal`; this is the first page of
+        it, so a learner who opened Today still has every pair one scroll away.
+      */}
+      <section className="col-span-12">
+        <div className="card">
+          <PanelHeader
+            action={
+              <Link className="text-[11px] text-primary-900" href="/library/formal-informal">
+                All {formalInformal.totalPairs}
+              </Link>
+            }
+            note="Register"
+            title="Informal and formal"
+          />
+          <div className="p-4">
+            <FormalInformalExplorer initialPage={formalInformal} />
+          </div>
         </div>
       </section>
 

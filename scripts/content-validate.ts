@@ -8,6 +8,7 @@
 import { validateGrammar } from '../content/grammar/index';
 import { readContent } from '../content/index';
 import { validateVocabulary } from '../content/ielts-vocabulary/index';
+import { validateFormalInformal } from '../content/formal-informal/index';
 import { validateVerbs } from '../content/verb-forms/index';
 import {
   presentParticiple,
@@ -44,6 +45,13 @@ const families = validateWordFamilies();
 const vocabulary = validateVocabulary();
 
 /**
+ * Informal → formal pairs, validated on the same terms as the IELTS
+ * vocabulary: content that fails the build, sharing no seed path with the
+ * 28-day corpus. Its pair count is printed because the screen prints it too.
+ */
+const formalInformal = validateFormalInformal();
+
+/**
  * The verb corpus, checked against the rules that generate four of its five
  * columns.
  *
@@ -60,6 +68,7 @@ for (const issue of [
   ...grammar.issues,
   ...families.issues,
   ...vocabulary.issues,
+  ...formalInformal.issues,
   ...verbs.issues,
 ]) {
   process.stdout.write(`${issue.file}  ${issue.path}\n    ${issue.message}\n`);
@@ -81,6 +90,7 @@ process.stdout.write(
     `  family words    ${String(families.counts.words)}`,
     `  vocabulary      ${String(vocabulary.counts.entries)}`,
     `  synonyms        ${String(vocabulary.counts.synonyms)}`,
+    `  formal-informal ${String(formalInformal.counts.pairs)}`,
     `  verbs           ${String(verbs.counts.verbs)}`,
     `  irregular verbs ${String(verbs.counts.irregular)}`,
     `  verb overrides  ${String(verbs.counts.overrides)}`,
@@ -109,6 +119,7 @@ const total =
   grammar.issues.length +
   families.issues.length +
   vocabulary.issues.length +
+  formalInformal.issues.length +
   verbs.issues.length;
 
 if (total > 0) {

@@ -1461,6 +1461,18 @@ they are the navy button and the exam room, not the page paper — and the canva
 hairline and muted tokens swap through CSS variables. `text-surface` stays white because every use
 of it is text on a filled brand colour.
 
+**D81 — informal → formal is a fifth content corpus, not a week of the course (user request, 2026-09-02).**
+The EngDic formal/informal list is register, not synonymy and not the 28-day spelling
+corpus. Folding three hundred untaught pairs into `words` would put them in the exam
+distractor pool — the same reason the IELTS vocabulary stays apart. So:
+`content/formal-informal/` holds one line per pair (`informal | formal | IPA | IPA |
+Bangla | Bangla`), validated at load, and the screen at `/library/formal-informal` (and
+the dashboard section that embeds the same explorer) is a reference: British IPA and a
+Bangla gloss on both sides, spoken with the browser voice, never written to
+`review_items`. Abbreviations whose spoken form dictionaries disagree on are flagged
+`needsReview`. The British/American table is two rows per idea so a search for `mate`
+or `dude` both land.
+
 ### Open — needs the user, not me
 
 **O3 — the 24 flagged transcriptions need a human ear (F9.9).** They are listed by

@@ -54,6 +54,7 @@ import { GetVerbsUseCase } from '@/modules/library/application/use-cases/get-ver
 import { GetVerbDrillUseCase } from '@/modules/library/application/use-cases/get-verb-drill';
 import { GetVocabularyUseCase } from '@/modules/library/application/use-cases/get-vocabulary';
 import { GetVocabularyDrillUseCase } from '@/modules/library/application/use-cases/get-vocabulary-drill';
+import { GetFormalInformalUseCase } from '@/modules/library/application/use-cases/get-formal-informal';
 import { GetWordFamiliesUseCase } from '@/modules/library/application/use-cases/get-word-families';
 import { ScoreDemoSpeechUseCase } from '@/modules/library/application/use-cases/score-demo-speech';
 import { GetLibraryPageUseCase } from '@/modules/library/application/use-cases/get-library-page';
@@ -575,6 +576,13 @@ export function makeGetVocabulary(c: IContainer): GetVocabularyUseCase {
  */
 export function makeGetVocabularyDrill(c: IContainer): GetVocabularyDrillUseCase {
   return new GetVocabularyDrillUseCase(c.vocabulary, c.random, c.courseWords);
+}
+
+/**
+ * Informal → formal register pairs. One content dependency and no query.
+ */
+export function makeGetFormalInformal(c: IContainer): GetFormalInformalUseCase {
+  return new GetFormalInformalUseCase(c.formalInformal);
 }
 
 /**
