@@ -135,7 +135,7 @@ export function FamilyExplorer({ initialPage }: IFamilyExplorerProps): ReactElem
       ) : null}
 
       {page.families.length === 0 && !loading ? (
-        <p className="rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-sm text-muted">
+        <p className="rounded-lg border border-hairline bg-neutral-50 p-6 text-sm text-muted">
           Nothing matches that. The corpus holds {page.totalWords} words across{' '}
           {page.totalFamilies} roots — clear a filter and it comes back.
         </p>
@@ -179,7 +179,7 @@ function Filters({
   onClear,
 }: IFiltersProps): ReactElement {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-4">
+    <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
         <label className="relative flex-1 min-w-[14rem]">
           <span className="sr-only">Find a word</span>
@@ -275,7 +275,7 @@ function FamilyCard({ family }: { readonly family: WordFamilyView }): ReactEleme
   }, [family.members]);
 
   return (
-    <li className="flex flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-4">
+    <li className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-baseline gap-2">
@@ -305,7 +305,7 @@ function FamilyCard({ family }: { readonly family: WordFamilyView }): ReactEleme
         {family.skills.map((skill) => (
           <span
             key={skill}
-            className="rounded-full border border-neutral-200 px-2 py-0.5 text-xs capitalize text-muted"
+            className="rounded-full border border-hairline px-2 py-0.5 text-xs capitalize text-muted"
           >
             {skill}
           </span>

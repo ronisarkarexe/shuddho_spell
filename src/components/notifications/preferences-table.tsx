@@ -80,7 +80,7 @@ export function PreferencesTable() {
 
       <tbody>
         {types.map((type) => (
-          <tr key={type} className="border-t border-neutral-200">
+          <tr key={type} className="border-t border-hairline">
             <th scope="row" className="py-2 text-left font-normal">
               {TYPE_LABELS[type] ?? type}
             </th>

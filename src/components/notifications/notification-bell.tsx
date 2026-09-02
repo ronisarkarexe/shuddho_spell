@@ -131,9 +131,9 @@ export function NotificationBell() {
           ref={popover}
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 z-10 mt-2 w-[min(24rem,calc(100vw-1.5rem))] border border-neutral-300 bg-white text-sm"
+          className="absolute right-0 z-10 mt-2 w-[min(24rem,calc(100vw-1.5rem))] border border-hairline bg-surface text-sm"
         >
-          <div className="flex items-center justify-between border-b border-neutral-300 px-4 py-2">
+          <div className="flex items-center justify-between border-b border-hairline px-4 py-2">
             <span className="font-medium">Notifications</span>
             <button
               type="button"
@@ -150,7 +150,7 @@ export function NotificationBell() {
           ) : (
             <ul>
               {feed.notifications.map((notification) => (
-                <li key={notification.id} className="border-b border-neutral-200 px-4 py-3">
+                <li key={notification.id} className="border-b border-hairline px-4 py-3">
                   <p className={notification.readAt === null ? 'font-medium' : undefined}>
                     {notification.title}
                   </p>

@@ -1,7 +1,15 @@
 import type { Metadata, Viewport } from 'next';
+import { cookies } from 'next/headers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { Bricolage_Grotesque, IBM_Plex_Mono, Noto_Sans_Bengali, Public_Sans } from 'next/font/google';
+import {
+  htmlDarkClass,
+  parseThemeCookie,
+  THEME_BOOTSTRAP,
+  THEME_COOKIE,
+} from '@/components/shell/theme-preference';
+import { ThemeSync } from '@/components/shell/theme-sync';
 import { SessionBoundary } from '@/lib/auth/session-boundary';
 import { QueryProvider } from '@/lib/query/query-provider';
 import './globals.css';
@@ -41,13 +49,27 @@ export default async function RootLayout({
 }): Promise<React.ReactElement> {
   const locale = await getLocale();
   const messages = await getMessages();
+  const store = await cookies();
+  const theme = parseThemeCookie(store.get(THEME_COOKIE)?.value);
+  const darkClass = htmlDarkClass(theme);
 
   return (
     <html
+      className={`${display.variable} ${body.variable} ${mono.variable} ${bengali.variable}${darkClass === '' ? '' : ` ${darkClass}`}`}
       lang={locale}
-      className={`${display.variable} ${body.variable} ${mono.variable} ${bengali.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        {/*
+          Blocking, in the head, on purpose. `next/script` `beforeInteractive`
+          landed in the body payload under Turbopack and ran too late to stop
+          a flash of the cream canvas. An inline script here executes before
+          first paint, which is the whole point of the cookie.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+      </head>
       <body>
+        <ThemeSync />
         <NextIntlClientProvider messages={messages}>
           <QueryProvider>
             <SessionBoundary>{children}</SessionBoundary>
