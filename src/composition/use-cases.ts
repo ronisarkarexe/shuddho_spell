@@ -57,6 +57,9 @@ import { GetVocabularyDrillUseCase } from '@/modules/library/application/use-cas
 import { GetFormalInformalUseCase } from '@/modules/library/application/use-cases/get-formal-informal';
 import { GetFormalInformalProgressUseCase } from '@/modules/library/application/use-cases/get-formal-informal-progress';
 import { SaveFormalInformalProgressUseCase } from '@/modules/library/application/use-cases/save-formal-informal-progress';
+import { GetSaifursVocabularyUseCase } from '@/modules/library/application/use-cases/get-saifurs-vocabulary';
+import { GetSaifursProgressUseCase } from '@/modules/library/application/use-cases/get-saifurs-progress';
+import { SaveSaifursProgressUseCase } from '@/modules/library/application/use-cases/save-saifurs-progress';
 import { GetWordFamiliesUseCase } from '@/modules/library/application/use-cases/get-word-families';
 import { ScoreDemoSpeechUseCase } from '@/modules/library/application/use-cases/score-demo-speech';
 import { GetLibraryPageUseCase } from '@/modules/library/application/use-cases/get-library-page';
@@ -601,6 +604,18 @@ export function makeSaveFormalInformalProgress(c: IContainer): SaveFormalInforma
     c.formalInformalProgress,
     c.formalInformal,
   );
+}
+
+export function makeGetSaifursVocabulary(c: IContainer): GetSaifursVocabularyUseCase {
+  return new GetSaifursVocabularyUseCase(c.saifurs);
+}
+
+export function makeGetSaifursProgress(c: IContainer): GetSaifursProgressUseCase {
+  return new GetSaifursProgressUseCase(c.learnerProfiles, c.saifursProgress, c.saifurs);
+}
+
+export function makeSaveSaifursProgress(c: IContainer): SaveSaifursProgressUseCase {
+  return new SaveSaifursProgressUseCase(c.learnerProfiles, c.saifursProgress, c.saifurs);
 }
 
 /**

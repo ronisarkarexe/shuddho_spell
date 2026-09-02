@@ -30,6 +30,7 @@ export function createGetVocabularyHandler(
         ...(query.partOfSpeech === undefined ? {} : { partOfSpeech: query.partOfSpeech }),
         ...(query.startsWith === undefined ? {} : { startsWith: query.startsWith }),
         ...(query.after === undefined ? {} : { after: query.after }),
+        ...(query.page === undefined ? {} : { page: query.page }),
       });
     },
     { querySchema: vocabularyQuerySchema },

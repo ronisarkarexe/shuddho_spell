@@ -1,6 +1,6 @@
 import { type ReactElement } from 'react';
 import { FORMAL_INFORMAL_PAGE_SIZE } from '@/components/learning/formal-informal-contracts';
-import { readFormalInformal, readFormalInformalProgress } from '@/composition/reads';
+import { readAudioPreferences, readFormalInformal, readFormalInformalProgress } from '@/composition/reads';
 import { requireUser } from '@/lib/auth/current-user';
 import { FormalInformalExplorer } from './formal-informal-explorer';
 
@@ -16,7 +16,10 @@ export const dynamic = 'force-dynamic';
 export default async function FormalInformalPage(): Promise<ReactElement> {
   const user = await requireUser();
 
-  const progress = await readFormalInformalProgress(user.userId);
+  const [progress, audio] = await Promise.all([
+    readFormalInformalProgress(user.userId),
+    readAudioPreferences(user.userId),
+  ]);
   const page = await readFormalInformal(
     FORMAL_INFORMAL_PAGE_SIZE,
     progress.pairsRead > 0 ? progress.lastPage : 1,
@@ -48,7 +51,11 @@ export default async function FormalInformalPage(): Promise<ReactElement> {
       </header>
 
       <section className="col-span-12">
-        <FormalInformalExplorer initialPage={page} initialProgress={progress} />
+        <FormalInformalExplorer
+          initialAccent={audio.accent}
+          initialPage={page}
+          initialProgress={progress}
+        />
       </section>
     </>
   );

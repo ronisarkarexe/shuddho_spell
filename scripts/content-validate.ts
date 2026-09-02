@@ -9,6 +9,7 @@ import { validateGrammar } from '../content/grammar/index';
 import { readContent } from '../content/index';
 import { validateVocabulary } from '../content/ielts-vocabulary/index';
 import { validateFormalInformal } from '../content/formal-informal/index';
+import { validateSaifursVocabulary } from '../content/saifurs-vocabulary/index';
 import { validateVerbs } from '../content/verb-forms/index';
 import {
   presentParticiple,
@@ -50,6 +51,7 @@ const vocabulary = validateVocabulary();
  * 28-day corpus. Its pair count is printed because the screen prints it too.
  */
 const formalInformal = validateFormalInformal();
+const saifurs = validateSaifursVocabulary();
 
 /**
  * The verb corpus, checked against the rules that generate four of its five
@@ -69,6 +71,7 @@ for (const issue of [
   ...families.issues,
   ...vocabulary.issues,
   ...formalInformal.issues,
+  ...saifurs.issues,
   ...verbs.issues,
 ]) {
   process.stdout.write(`${issue.file}  ${issue.path}\n    ${issue.message}\n`);
@@ -91,6 +94,7 @@ process.stdout.write(
     `  vocabulary      ${String(vocabulary.counts.entries)}`,
     `  synonyms        ${String(vocabulary.counts.synonyms)}`,
     `  formal-informal ${String(formalInformal.counts.pairs)}`,
+    `  saifurs         ${String(saifurs.counts.entries)}`,
     `  verbs           ${String(verbs.counts.verbs)}`,
     `  irregular verbs ${String(verbs.counts.irregular)}`,
     `  verb overrides  ${String(verbs.counts.overrides)}`,
@@ -120,6 +124,7 @@ const total =
   families.issues.length +
   vocabulary.issues.length +
   formalInformal.issues.length +
+  saifurs.issues.length +
   verbs.issues.length;
 
 if (total > 0) {

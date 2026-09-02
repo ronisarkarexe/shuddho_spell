@@ -6,7 +6,14 @@ import { useTranslations } from 'next-intl';
 import { type ReactElement } from 'react';
 import { Glyph } from '@/components/icons/glyph';
 import { cn } from '@/lib/cn';
-import { activeHref, ADMIN_ITEM, NAV_ITEMS, SETTINGS_ITEM, type INavItem } from './nav-items';
+import {
+  activeHref,
+  ADMIN_ITEM,
+  flattenNavItems,
+  NAV_ITEMS,
+  SETTINGS_ITEM,
+  type INavItem,
+} from './nav-items';
 
 interface ISidebarProps {
   readonly collapsed: boolean;
@@ -20,6 +27,7 @@ interface IRailLinkProps {
   readonly collapsed: boolean;
   readonly active: boolean;
   readonly label: string;
+  readonly nested?: boolean;
 }
 
 /**
@@ -33,7 +41,7 @@ interface IRailLinkProps {
  * announced reliably. `sr-only` keeps it for assistive tech and out of the
  * 56px rail.
  */
-function RailLink({ item, collapsed, active, label }: IRailLinkProps): ReactElement {
+function RailLink({ item, collapsed, active, label, nested = false }: IRailLinkProps): ReactElement {
   return (
     <li>
       <Link
@@ -43,13 +51,63 @@ function RailLink({ item, collapsed, active, label }: IRailLinkProps): ReactElem
           'hover:bg-primary-50',
           active && 'bg-primary-100 font-medium text-primary-900',
           collapsed ? 'justify-center px-0' : 'max-md:justify-center max-md:px-0',
+          nested && !collapsed && 'h-8 pl-7 text-[13px] max-md:pl-2',
         )}
         href={item.href}
         title={collapsed ? label : undefined}
       >
-        <Glyph className="shrink-0" name={item.glyph} size={18} />
+        {(!nested || collapsed) && <Glyph className="shrink-0" name={item.glyph} size={18} />}
         <span className={cn(collapsed ? 'sr-only' : 'max-md:sr-only')}>{label}</span>
       </Link>
+    </li>
+  );
+}
+
+function RailGroup({
+  item,
+  collapsed,
+  current,
+  labelFor,
+}: {
+  readonly item: INavItem;
+  readonly collapsed: boolean;
+  readonly current: string | null;
+  readonly labelFor: (key: string) => string;
+}): ReactElement {
+  const children = item.children ?? [];
+  const childActive = children.some((child) => child.href === current);
+  const open = !collapsed && (current === item.href || childActive);
+
+  return (
+    <li>
+      <Link
+        aria-current={current === item.href ? 'page' : undefined}
+        className={cn(
+          'flex h-9 items-center gap-3 rounded-control px-2 text-neutral-700',
+          'hover:bg-primary-50',
+          current === item.href && 'bg-primary-100 font-medium text-primary-900',
+          collapsed ? 'justify-center px-0' : 'max-md:justify-center max-md:px-0',
+        )}
+        href={item.href}
+        title={collapsed ? labelFor(item.labelKey) : undefined}
+      >
+        <Glyph className="shrink-0" name={item.glyph} size={18} />
+        <span className={cn(collapsed ? 'sr-only' : 'max-md:sr-only')}>{labelFor(item.labelKey)}</span>
+      </Link>
+      {open && (
+        <ul className="mt-0.5 flex flex-col gap-0.5 max-md:hidden">
+          {children.map((child) => (
+            <RailLink
+              active={current === child.href}
+              collapsed={false}
+              item={child}
+              key={child.href}
+              label={labelFor(child.labelKey)}
+              nested
+            />
+          ))}
+        </ul>
+      )}
     </li>
   );
 }
@@ -58,7 +116,7 @@ export function Sidebar({ collapsed, onToggle, isAdmin }: ISidebarProps): ReactE
   const t = useTranslations('nav');
   const pathname = usePathname();
   const footer = isAdmin ? [ADMIN_ITEM, SETTINGS_ITEM] : [SETTINGS_ITEM];
-  const current = activeHref(pathname, [...NAV_ITEMS, ...footer]);
+  const current = activeHref(pathname, [...flattenNavItems(NAV_ITEMS), ...footer]);
 
   return (
     <nav
@@ -89,21 +147,32 @@ export function Sidebar({ collapsed, onToggle, isAdmin }: ISidebarProps): ReactE
 
       {/*
         The list grew past one viewport — families, vocabulary, informal/formal,
-        verbs, prepositions, question words, gap-fill — so without a scroll
-        region here the footer (Admin, Settings) is pushed off the screen.
-        `min-h-0` is what lets a flex child shrink; `overflow-y-auto` is what
-        scrolls the items above Admin. Admin itself stays put below.
+        verbs, prepositions, question words, gap-fill, and a child per topic —
+        so without a scroll region here the footer (Admin, Settings) is pushed
+        off the screen. `min-h-0` is what lets a flex child shrink;
+        `overflow-y-auto` is what scrolls the items above Admin. Admin itself
+        stays put below.
       */}
       <ul className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-2">
-        {NAV_ITEMS.map((item) => (
-          <RailLink
-            active={current === item.href}
-            collapsed={collapsed}
-            item={item}
-            key={item.href}
-            label={t(item.labelKey)}
-          />
-        ))}
+        {NAV_ITEMS.map((item) =>
+          item.children === undefined ? (
+            <RailLink
+              active={current === item.href}
+              collapsed={collapsed}
+              item={item}
+              key={item.href}
+              label={t(item.labelKey)}
+            />
+          ) : (
+            <RailGroup
+              collapsed={collapsed}
+              current={current}
+              item={item}
+              key={item.href}
+              labelFor={(key) => t(key)}
+            />
+          ),
+        )}
       </ul>
 
       <ul className="flex shrink-0 flex-col gap-0.5 border-t border-hairline p-2">

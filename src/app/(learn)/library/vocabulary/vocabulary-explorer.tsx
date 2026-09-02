@@ -1,8 +1,18 @@
 'use client';
 
-import { useEffect, useState, type ReactElement } from 'react';
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
 import { Glyph } from '@/components/icons/glyph';
+import { LearnStepper } from '@/components/learning/learn-stepper';
+import { NumberedPager } from '@/components/learning/numbered-pager';
 import {
+  StudyToggles,
+  studyLang,
+  type StudyAccent,
+  type StudyMode,
+} from '@/components/learning/study-toggles';
+import {
+  VOCABULARY_PAGE_SIZE,
   shortPos,
   vocabularyPageSchema,
   type VocabularyEntryView,
@@ -15,18 +25,17 @@ import { cn } from '@/lib/cn';
 
 export interface IVocabularyExplorerProps {
   readonly initialPage: VocabularyPage;
+  readonly initialAccent: StudyAccent;
+  readonly lockedTopic?: string;
+  readonly pageSize?: number;
 }
 
-const PAGE_SIZE = 24;
-const LANG = 'en-GB';
-
 interface IFilters {
-  readonly topic: string;
   readonly partOfSpeech: string;
   readonly startsWith: string;
 }
 
-const NO_FILTERS: IFilters = { topic: '', partOfSpeech: '', startsWith: '' };
+const NO_FILTERS: IFilters = { partOfSpeech: '', startsWith: '' };
 
 /**
  * The vocabulary reference: filter, page, and one row per pair.
@@ -34,38 +43,46 @@ const NO_FILTERS: IFilters = { topic: '', partOfSpeech: '', startsWith: '' };
  * A Client Component because filtering is interaction. The first page arrives
  * from the server render already populated; every page and every filter after
  * that comes from `/api/v1/library/vocabulary`, which runs the same use case
- * the server just ran. One implementation, two callers — the arrangement the
- * families explorer uses next door, and the sweep in
- * `src/composition/one-implementation.test.ts` is what keeps it honest.
+ * the server just ran.
  *
  * **The search box matches synonyms as well as headwords.** Half the reason to
- * open this screen is having the plain word and wanting the better one, and a
- * corpus filed under the better one answers `huge` with nothing unless the
- * synonyms are searched too. `VocabularyEntry.matches` is where that happens.
+ * open this screen is having the plain word and wanting the better one.
  *
- * **Rows, not cards.** The families screen uses cards because a family is six
- * words and a rule; a pair is two words, and a card around two words is an
- * empty box. Twenty-four rows also mean the page can be read down the left edge
- * — which is how anybody actually uses a synonym list.
+ * A locked topic is a dedicated menu: the topic is in the URL, not a dropdown,
+ * so paging and Learn stay inside that list.
  */
-export function VocabularyExplorer({ initialPage }: IVocabularyExplorerProps): ReactElement {
+export function VocabularyExplorer({
+  initialPage,
+  initialAccent,
+  lockedTopic,
+  pageSize = VOCABULARY_PAGE_SIZE,
+}: IVocabularyExplorerProps): ReactElement {
   const [page, setPage] = useState<VocabularyPage>(initialPage);
-  const [cursor, setCursor] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(initialPage.page);
   const [filters, setFilters] = useState<IFilters>(NO_FILTERS);
   const [typed, setTyped] = useState('');
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [jumpValue, setJumpValue] = useState(String(initialPage.page));
+  const [mode, setMode] = useState<StudyMode>('read');
+  const [accent, setAccent] = useState<StudyAccent>(initialAccent);
+  const [learnIndex, setLearnIndex] = useState(0);
+  const [revealed, setRevealed] = useState(false);
+  const skipFirstFetch = useRef(true);
+  const appliedSearch = useRef('');
 
-  /**
-   * The search box is debounced, the selects are not — the same split the
-   * families explorer makes. Typing `environ` is seven keystrokes and would be
-   * seven requests; a topic is one click, and a quarter-second of nothing after
-   * a click reads as a broken control.
-   */
+  const filtered = filters.partOfSpeech !== '' || filters.startsWith !== '';
+
   useEffect(() => {
+    const nextSearch = typed.trim();
     const timer = setTimeout(() => {
-      setFilters((current) => ({ ...current, startsWith: typed.trim() }));
-      setCursor(null);
+      if (appliedSearch.current === nextSearch) {
+        return;
+      }
+
+      appliedSearch.current = nextSearch;
+      setFilters((current) => ({ ...current, startsWith: nextSearch }));
+      setPageNumber(1);
     }, 250);
 
     return () => {
@@ -74,8 +91,8 @@ export function VocabularyExplorer({ initialPage }: IVocabularyExplorerProps): R
   }, [typed]);
 
   useEffect(() => {
-    // The unfiltered first page is already in state from the server render.
-    if (cursor === null && filters === NO_FILTERS) {
+    if (skipFirstFetch.current) {
+      skipFirstFetch.current = false;
       return;
     }
 
@@ -86,17 +103,22 @@ export function VocabularyExplorer({ initialPage }: IVocabularyExplorerProps): R
     void apiFetch('/api/v1/library/vocabulary', {
       schema: vocabularyPageSchema,
       query: {
-        pageSize: PAGE_SIZE,
-        after: cursor ?? undefined,
-        topic: filters.topic === '' ? undefined : filters.topic,
+        pageSize,
+        page: pageNumber,
+        topic: lockedTopic,
         partOfSpeech: filters.partOfSpeech === '' ? undefined : filters.partOfSpeech,
         startsWith: filters.startsWith === '' ? undefined : filters.startsWith,
       },
     })
       .then((next) => {
-        if (live) {
-          setPage(next);
+        if (!live) {
+          return;
         }
+
+        setPage(next);
+        setJumpValue(String(next.page));
+        setLearnIndex(0);
+        setRevealed(false);
       })
       .catch(() => {
         if (live) {
@@ -112,27 +134,47 @@ export function VocabularyExplorer({ initialPage }: IVocabularyExplorerProps): R
     return () => {
       live = false;
     };
-  }, [cursor, filters]);
+  }, [pageNumber, filters, lockedTopic, pageSize]);
 
-  const set = (patch: Partial<IFilters>): void => {
-    setFilters((current) => ({ ...current, ...patch }));
-    setCursor(null);
+  const goTo = useCallback((nextPage: number): void => {
+    setPageNumber(nextPage);
+  }, []);
+
+  const clearFilters = (): void => {
+    appliedSearch.current = '';
+    setTyped('');
+    setFilters(NO_FILTERS);
+    setPageNumber(1);
+    setJumpValue('1');
   };
 
-  const filtered = filters !== NO_FILTERS;
+  const current = page.entries[learnIndex] ?? page.entries[0] ?? null;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="relative min-w-[14rem] flex-1">
+    <div className="flex flex-col gap-4 sm:gap-5">
+      <div className="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-3 sm:p-4">
+        <StudyToggles
+          accent={accent}
+          mode={mode}
+          onAccent={setAccent}
+          onMode={(next) => {
+            setMode(next);
+            setRevealed(false);
+            setLearnIndex(0);
+          }}
+        />
+
+        {lockedTopic === undefined && <TopicLinks topics={page.topics} />}
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <label className="relative min-w-0 flex-1 sm:min-w-[14rem]">
             <span className="sr-only">Find a word or a synonym</span>
             <Glyph
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
               name="search"
             />
             <input
-              className="w-full rounded-control border border-neutral-300 py-2 pl-10 pr-3"
+              className="w-full rounded-control border border-neutral-300 py-2.5 pl-10 pr-3"
               onChange={(event) => {
                 setTyped(event.target.value);
               }}
@@ -142,32 +184,15 @@ export function VocabularyExplorer({ initialPage }: IVocabularyExplorerProps): R
             />
           </label>
 
-          <select
-            aria-label="Topic"
-            className="rounded-control border border-neutral-300 px-3 py-2"
-            onChange={(event) => {
-              set({ topic: event.target.value });
-            }}
-            value={filters.topic}
-          >
-            <option value="">Every topic</option>
-            {page.topics.map((topic) => (
-              <option key={topic.topic} value={topic.topic}>
-                {topic.topic} ({topic.entries})
-              </option>
-            ))}
-          </select>
-
           <button
-            className="rounded-control border border-neutral-300 px-3 py-2 text-muted hover:text-primary-900"
-            onClick={() => {
-              setTyped('');
-              setFilters(NO_FILTERS);
-              setCursor(null);
-            }}
+            className="min-h-10 rounded-control border border-neutral-300 px-3 py-2 text-muted hover:text-primary-900"
+            onClick={clearFilters}
             type="button"
           >
             Clear
+            <span className="ml-1 font-bengali" lang="bn">
+              মুছুন
+            </span>
           </button>
         </div>
 
@@ -177,17 +202,19 @@ export function VocabularyExplorer({ initialPage }: IVocabularyExplorerProps): R
             <button
               aria-pressed={filters.partOfSpeech === entry.partOfSpeech}
               className={cn(
-                'rounded-chip border px-3 py-1 capitalize',
+                'min-h-8 rounded-chip border px-3 py-1 capitalize',
                 filters.partOfSpeech === entry.partOfSpeech
                   ? 'border-primary-900 bg-primary-50 text-primary-900'
                   : 'border-neutral-300 text-muted hover:text-primary-900',
               )}
               key={entry.partOfSpeech}
               onClick={() => {
-                set({
+                setFilters((currentFilter) => ({
+                  ...currentFilter,
                   partOfSpeech:
-                    filters.partOfSpeech === entry.partOfSpeech ? '' : entry.partOfSpeech,
-                });
+                    currentFilter.partOfSpeech === entry.partOfSpeech ? '' : entry.partOfSpeech,
+                }));
+                setPageNumber(1);
               }}
               type="button"
             >
@@ -200,7 +227,8 @@ export function VocabularyExplorer({ initialPage }: IVocabularyExplorerProps): R
       <p aria-live="polite" className="num text-muted">
         {filtered
           ? `${String(page.matchedEntries)} of ${String(page.totalEntries)} pairs match`
-          : `${String(page.totalEntries)} pairs · ${String(page.totalSynonyms)} synonyms`}
+          : `${String(page.matchedEntries)} pairs · ${String(page.totalSynonyms)} synonyms`}
+        {` · page ${String(page.page)} of ${String(page.totalPages)} · ${String(page.pageSize)} per page`}
         {loading ? ' · loading…' : ''}
       </p>
 
@@ -213,59 +241,86 @@ export function VocabularyExplorer({ initialPage }: IVocabularyExplorerProps): R
 
       {page.entries.length === 0 && !loading && (
         <p className="rounded-card border border-hairline bg-neutral-50 p-6 text-muted">
-          Nothing matches that. The list holds {page.totalEntries} pairs — clear a filter and it
-          comes back.
+          Nothing matches that. Clear a filter and the list comes back.
         </p>
       )}
 
-      <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-        {page.entries.map((entry) => (
-          <EntryRow entry={entry} key={entry.word} />
-        ))}
-      </ul>
+      {mode === 'read' && page.entries.length > 0 && (
+        <ul className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+          {page.entries.map((entry) => (
+            <EntryRow accent={accent} entry={entry} key={entry.word} />
+          ))}
+        </ul>
+      )}
 
-      <div className="flex items-center justify-between">
-        {/*
-          Next and back-to-the-start, not next and previous — a keyset cursor
-          walks forward, and a Back that silently returned to the first page
-          would be worse than not offering one. The families pager says the
-          same thing at more length.
-        */}
-        <button
-          className="rounded-control border border-neutral-300 px-3 py-2 text-muted disabled:opacity-40"
-          disabled={cursor === null}
-          onClick={() => {
-            setCursor(null);
+      {mode === 'learn' && current !== null && (
+        <LearnCard
+          accent={accent}
+          entry={current}
+          index={learnIndex}
+          onNext={() => {
+            setLearnIndex((currentIndex) => Math.min(page.entries.length - 1, currentIndex + 1));
+            setRevealed(false);
           }}
-          type="button"
-        >
-          Back to the start
-        </button>
-        <button
-          className="rounded-control border border-neutral-300 px-3 py-2 text-primary-900 disabled:opacity-40"
-          disabled={page.nextCursor === null}
-          onClick={() => {
-            setCursor(page.entries[page.entries.length - 1]?.word ?? null);
+          onPrevious={() => {
+            setLearnIndex((currentIndex) => Math.max(0, currentIndex - 1));
+            setRevealed(false);
           }}
-          type="button"
-        >
-          More pairs
-        </button>
-      </div>
+          onReveal={() => {
+            setRevealed(true);
+          }}
+          revealed={revealed}
+          total={page.entries.length}
+        />
+      )}
+
+      <NumberedPager
+        jumpValue={jumpValue}
+        onJump={goTo}
+        onJumpValue={setJumpValue}
+        onNext={() => {
+          goTo(Math.min(page.totalPages, page.page + 1));
+        }}
+        onPrevious={() => {
+          goTo(Math.max(1, page.page - 1));
+        }}
+        page={page.page}
+        totalPages={page.totalPages}
+      />
     </div>
   );
 }
 
-/**
- * One pair: the word, what it can be swapped for, and a button that says it.
- *
- * The arrow is the whole idea of the screen in one character — this word
- * *becomes* that one — and it points from the headword to the swap rather than
- * sitting between two equal things.
- */
-function EntryRow({ entry }: { readonly entry: VocabularyEntryView }): ReactElement {
+function TopicLinks({
+  topics,
+}: {
+  readonly topics: VocabularyPage['topics'];
+}): ReactElement {
+  return (
+    <div className="flex flex-wrap gap-1" role="navigation" aria-label="Topics">
+      {topics.map((topic) => (
+        <Link
+          className="min-h-8 rounded-chip border border-neutral-300 px-3 py-1 capitalize text-muted hover:text-primary-900"
+          href={`/library/vocabulary/${topic.topic}`}
+          key={topic.topic}
+        >
+          {topic.topic} <span className="num text-[11px]">{topic.entries}</span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function EntryRow({
+  entry,
+  accent,
+}: {
+  readonly entry: VocabularyEntryView;
+  readonly accent: StudyAccent;
+}): ReactElement {
   const { supported, say } = useSpeech();
   const [best, ...rest] = entry.synonyms;
+  const lang = studyLang(accent);
 
   return (
     <li className="flex items-baseline gap-3 rounded-card border border-hairline bg-surface px-3 py-2">
@@ -274,7 +329,7 @@ function EntryRow({ entry }: { readonly entry: VocabularyEntryView }): ReactElem
           aria-label={`Hear ${entry.word}`}
           className="text-neutral-300 hover:text-primary-900"
           onClick={() => {
-            say(entry.word, entry.isPhrase ? SENTENCE_RATE : DICTATION_RATE, LANG);
+            say(entry.word, entry.isPhrase ? SENTENCE_RATE : DICTATION_RATE, lang);
           }}
           type="button"
         >
@@ -307,7 +362,7 @@ function EntryRow({ entry }: { readonly entry: VocabularyEntryView }): ReactElem
                   <button
                     className="hover:text-primary-900 hover:underline"
                     onClick={() => {
-                      say(synonym, synonym.includes(' ') ? SENTENCE_RATE : DICTATION_RATE, LANG);
+                      say(synonym, synonym.includes(' ') ? SENTENCE_RATE : DICTATION_RATE, lang);
                     }}
                     title={`Hear ${synonym}`}
                     type="button"
@@ -325,5 +380,82 @@ function EntryRow({ entry }: { readonly entry: VocabularyEntryView }): ReactElem
 
       <span className="text-[11px] capitalize text-muted">{entry.topic}</span>
     </li>
+  );
+}
+
+function LearnCard({
+  entry,
+  accent,
+  index,
+  total,
+  revealed,
+  onReveal,
+  onNext,
+  onPrevious,
+}: {
+  readonly entry: VocabularyEntryView;
+  readonly accent: StudyAccent;
+  readonly index: number;
+  readonly total: number;
+  readonly revealed: boolean;
+  readonly onReveal: () => void;
+  readonly onNext: () => void;
+  readonly onPrevious: () => void;
+}): ReactElement {
+  const { supported, say } = useSpeech();
+  const lang = studyLang(accent);
+  const [best, ...rest] = entry.synonyms;
+
+  return (
+    <div className="flex flex-col gap-4 rounded-card border border-hairline bg-surface p-4 sm:p-6">
+      <p className="num text-muted">
+        {String(index + 1)} of {String(total)} on this page
+        <span className="ml-2 font-bengali" lang="bn">
+          এই পাতায়
+        </span>
+      </p>
+
+      <div className="flex flex-col items-start gap-2">
+        <p className="font-display text-3xl tracking-tight text-primary-900 sm:text-4xl">
+          {entry.word}
+        </p>
+        <span className="num text-[11px] capitalize text-muted">{entry.partOfSpeech}</span>
+        {supported && (
+          <button
+            aria-label={`Hear ${entry.word}`}
+            className="inline-flex min-h-9 items-center gap-1 text-muted hover:text-primary-900"
+            onClick={() => {
+              say(entry.word, entry.isPhrase ? SENTENCE_RATE : DICTATION_RATE, lang);
+            }}
+            type="button"
+          >
+            <Glyph name="play" />
+          </button>
+        )}
+      </div>
+
+      {revealed ? (
+        <div className="flex flex-col gap-2 border-t border-hairline pt-4">
+          <p>
+            <span className="text-muted">→ </span>
+            <span className="text-mastered">{best}</span>
+          </p>
+          {rest.length > 0 && <p className="text-muted">also {rest.join(', ')}</p>}
+        </div>
+      ) : (
+        <button
+          className="min-h-12 rounded-control bg-primary-900 px-4 text-surface"
+          onClick={onReveal}
+          type="button"
+        >
+          Show meaning
+          <span className="ml-2 font-bengali" lang="bn">
+            অর্থ দেখুন
+          </span>
+        </button>
+      )}
+
+      <LearnStepper index={index} onNext={onNext} onPrevious={onPrevious} total={total} />
+    </div>
   );
 }

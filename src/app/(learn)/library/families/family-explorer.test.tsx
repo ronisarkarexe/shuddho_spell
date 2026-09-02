@@ -72,6 +72,9 @@ const FIRST_PAGE: WordFamilyPage = {
     },
   ],
   nextCursor: 'happy',
+  page: 1,
+  totalPages: 2,
+  pageSize: 12,
   matchedFamilies: 1,
   matchedWords: 3,
   totalWords: 2299,
@@ -114,6 +117,8 @@ const SECOND_PAGE: WordFamilyPage = {
     },
   ],
   nextCursor: null,
+  page: 2,
+  totalPages: 2,
 };
 
 beforeEach(() => {

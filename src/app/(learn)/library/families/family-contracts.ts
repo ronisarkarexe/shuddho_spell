@@ -34,6 +34,9 @@ export const wordFamilySchema = z.object({
 export const wordFamilyPageSchema = z.object({
   families: z.array(wordFamilySchema).readonly(),
   nextCursor: z.string().nullable(),
+  page: z.number(),
+  totalPages: z.number(),
+  pageSize: z.number(),
   matchedFamilies: z.number(),
   matchedWords: z.number(),
   totalWords: z.number(),
@@ -57,6 +60,9 @@ export type FormChange = z.infer<typeof formChangeSchema>;
 export type FamilyMember = z.infer<typeof familyMemberSchema>;
 export type WordFamilyView = z.infer<typeof wordFamilySchema>;
 export type WordFamilyPage = z.infer<typeof wordFamilyPageSchema>;
+
+/** Twenty-five families on a topic page, matching Saifur's. */
+export const FAMILY_TOPIC_PAGE_SIZE = 25;
 
 /** The four papers, in the order the test is sat. */
 export const SKILLS = Object.freeze(['listening', 'reading', 'writing', 'speaking'] as const);

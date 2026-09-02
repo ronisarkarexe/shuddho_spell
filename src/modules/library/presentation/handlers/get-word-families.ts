@@ -31,6 +31,7 @@ export function createGetWordFamiliesHandler(
         ...(query.ruleFamily === undefined ? {} : { ruleFamily: query.ruleFamily }),
         ...(query.startsWith === undefined ? {} : { startsWith: query.startsWith }),
         ...(query.after === undefined ? {} : { after: query.after }),
+        ...(query.page === undefined ? {} : { page: query.page }),
       });
     },
     { querySchema: wordFamilyQuerySchema },

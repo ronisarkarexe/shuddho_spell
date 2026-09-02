@@ -30,6 +30,11 @@ import {
   createGetFormalInformalProgressHandler,
   createSaveFormalInformalProgressHandler,
 } from '@/modules/library/presentation/handlers/formal-informal-progress';
+import { createGetSaifursVocabularyHandler } from '@/modules/library/presentation/handlers/get-saifurs-vocabulary';
+import {
+  createGetSaifursProgressHandler,
+  createSaveSaifursProgressHandler,
+} from '@/modules/library/presentation/handlers/saifurs-progress';
 import { createGetWordFamiliesHandler } from '@/modules/library/presentation/handlers/get-word-families';
 import { createCompleteSessionHandler } from '@/modules/lessons/presentation/handlers/complete-session';
 import { createAdvanceStageHandler } from '@/modules/lessons/presentation/handlers/advance-stage';
@@ -68,6 +73,9 @@ import {
   makeGetFormalInformal,
   makeGetFormalInformalProgress,
   makeSaveFormalInformalProgress,
+  makeGetSaifursVocabulary,
+  makeGetSaifursProgress,
+  makeSaveSaifursProgress,
   makeGetWordFamilies,
   makeVerifyCertificate,
   makeGetMe,
@@ -311,6 +319,18 @@ export const getFormalInformalProgressHandler = createGetFormalInformalProgressH
 
 export const saveFormalInformalProgressHandler = createSaveFormalInformalProgressHandler(() =>
   makeSaveFormalInformalProgress(container()),
+);
+
+export const getSaifursVocabularyHandler = createGetSaifursVocabularyHandler(() =>
+  makeGetSaifursVocabulary(container()),
+);
+
+export const getSaifursProgressHandler = createGetSaifursProgressHandler(() =>
+  makeGetSaifursProgress(container()),
+);
+
+export const saveSaifursProgressHandler = createSaveSaifursProgressHandler(() =>
+  makeSaveSaifursProgress(container()),
 );
 
 /** The verb reference — the third of the three library screens. */

@@ -34,6 +34,10 @@ export interface IVocabularyPage {
   readonly entries: readonly IVocabularyEntryView[];
   /** The headword to pass as `after` for the next page, or null at the end. */
   readonly nextCursor: string | null;
+  /** 1-based. Out of range is clamped, never an error. */
+  readonly page: number;
+  readonly totalPages: number;
+  readonly pageSize: number;
   /** How many entries the filters matched, before paging. */
   readonly matchedEntries: number;
   /** The whole corpus, unfiltered — the number the screen promises. */

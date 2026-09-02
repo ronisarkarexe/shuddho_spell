@@ -34,6 +34,9 @@ export const vocabularyEntrySchema = z.object({
 export const vocabularyPageSchema = z.object({
   entries: z.array(vocabularyEntrySchema).readonly(),
   nextCursor: z.string().nullable(),
+  page: z.number(),
+  totalPages: z.number(),
+  pageSize: z.number(),
   matchedEntries: z.number(),
   totalEntries: z.number(),
   totalSynonyms: z.number(),
@@ -47,6 +50,9 @@ export type VocabularyDrillQuestion = z.infer<typeof vocabularyDrillQuestionSche
 export type VocabularyDrill = z.infer<typeof vocabularyDrillSchema>;
 export type VocabularyEntryView = z.infer<typeof vocabularyEntrySchema>;
 export type VocabularyPage = z.infer<typeof vocabularyPageSchema>;
+
+/** Twenty-five pairs on a topic page, matching Saifur's. */
+export const VOCABULARY_PAGE_SIZE = 25;
 
 /**
  * The short tag printed beside a word.

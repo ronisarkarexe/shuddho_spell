@@ -20,6 +20,7 @@ import { type IVerbPage } from '@/modules/library/application/dto/verb-view';
 import { type IVocabularyDrill } from '@/modules/library/application/dto/vocabulary-drill';
 import { type IVocabularyPage } from '@/modules/library/application/dto/vocabulary-view';
 import { type IFormalInformalPage, type IFormalInformalProgressView } from '@/modules/library/application/dto/formal-informal-view';
+import { type ISaifursPage, type ISaifursProgressView } from '@/modules/library/application/dto/saifurs-view';
 import { type IWordFamilyPage } from '@/modules/library/application/dto/word-family-view';
 import { type IWordPhonemeStrip } from '@/modules/library/application/dto/phoneme-strip';
 import { type IProgramDayDetail } from '@/modules/program/application/dto/program-day-detail';
@@ -62,6 +63,8 @@ import {
   makeGetVocabularyDrill,
   makeGetFormalInformal,
   makeGetFormalInformalProgress,
+  makeGetSaifursVocabulary,
+  makeGetSaifursProgress,
   makeGetWordFamilies,
   makeGetPhonemeStrips,
   makeGetPracticeQueue,
@@ -214,8 +217,11 @@ export const readLibraryPage = cache(
  * that ships in the bundle.
  */
 export const readWordFamilies = cache(
-  async (pageSize: number): Promise<IWordFamilyPage> =>
-    makeGetWordFamilies(createContainer(crypto.randomUUID())).execute({ pageSize }),
+  async (pageSize: number, topic?: string): Promise<IWordFamilyPage> =>
+    makeGetWordFamilies(createContainer(crypto.randomUUID())).execute({
+      pageSize,
+      ...(topic === undefined ? {} : { topic }),
+    }),
 );
 
 /**
@@ -227,8 +233,12 @@ export const readWordFamilies = cache(
  * compiled module; what is worth avoiding is running it twice in one render.
  */
 export const readVocabulary = cache(
-  async (pageSize: number): Promise<IVocabularyPage> =>
-    makeGetVocabulary(createContainer(crypto.randomUUID())).execute({ pageSize }),
+  async (pageSize: number, page = 1, topic?: string): Promise<IVocabularyPage> =>
+    makeGetVocabulary(createContainer(crypto.randomUUID())).execute({
+      pageSize,
+      page,
+      ...(topic === undefined ? {} : { topic }),
+    }),
 );
 
 /**
@@ -249,13 +259,27 @@ export async function readVocabularyDrill(count: number): Promise<IVocabularyDri
  * query to save, but no reason to derive the same page twice in one render.
  */
 export const readFormalInformal = cache(
-  async (pageSize: number, page = 1): Promise<IFormalInformalPage> =>
-    makeGetFormalInformal(createContainer(crypto.randomUUID())).execute({ pageSize, page }),
+  async (pageSize: number, page = 1, topic?: string): Promise<IFormalInformalPage> =>
+    makeGetFormalInformal(createContainer(crypto.randomUUID())).execute({
+      pageSize,
+      page,
+      ...(topic === undefined ? {} : { topic }),
+    }),
 );
 
 export const readFormalInformalProgress = cache(
   async (userId: string): Promise<IFormalInformalProgressView> =>
     makeGetFormalInformalProgress(createContainer(crypto.randomUUID())).execute({ userId }),
+);
+
+export const readSaifursVocabulary = cache(
+  async (pageSize: number, page = 1): Promise<ISaifursPage> =>
+    makeGetSaifursVocabulary(createContainer(crypto.randomUUID())).execute({ pageSize, page }),
+);
+
+export const readSaifursProgress = cache(
+  async (userId: string): Promise<ISaifursProgressView> =>
+    makeGetSaifursProgress(createContainer(crypto.randomUUID())).execute({ userId }),
 );
 
 /**

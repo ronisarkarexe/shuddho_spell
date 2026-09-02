@@ -15,6 +15,8 @@ export interface IGetVocabularyInput {
   readonly startsWith?: string;
   /** The headword of the last entry on the previous page. */
   readonly after?: string;
+  /** 1-based. When set, `after` is ignored. Out of range is clamped. */
+  readonly page?: number;
   readonly pageSize: number;
 }
 
@@ -52,16 +54,26 @@ export class GetVocabularyUseCase {
     const matched = all.filter((entry) => keeps(entry, input));
 
     const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, input.pageSize));
+    const totalPages = Math.max(1, Math.ceil(matched.length / pageSize));
     const start =
-      input.after === undefined
-        ? 0
-        : matched.findIndex((entry) => entry.word === input.after) + 1;
+      input.page !== undefined
+        ? (Math.min(totalPages, Math.max(1, input.page)) - 1) * pageSize
+        : input.after === undefined
+          ? 0
+          : matched.findIndex((entry) => entry.word === input.after) + 1;
+    const pageNumber =
+      input.page !== undefined
+        ? Math.min(totalPages, Math.max(1, input.page))
+        : Math.min(totalPages, Math.floor(start / pageSize) + 1);
     const page = matched.slice(start, start + pageSize);
 
     return Promise.resolve({
       entries: page.map((entry) => this.view(entry)),
       nextCursor:
         start + pageSize < matched.length ? (page[page.length - 1]?.word ?? null) : null,
+      page: pageNumber,
+      totalPages,
+      pageSize,
       matchedEntries: matched.length,
       totalEntries: all.length,
       totalSynonyms: countSynonyms(all),
