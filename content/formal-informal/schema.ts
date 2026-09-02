@@ -41,6 +41,7 @@ export const FORMAL_INFORMAL_TOPICS = [
   'academic',
   'social',
   'variety',
+  'more',
 ] as const;
 
 export type FormalInformalTopic = (typeof FORMAL_INFORMAL_TOPICS)[number];

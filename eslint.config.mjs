@@ -1,7 +1,7 @@
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
-import boundaries from 'eslint-plugin-boundaries';
+import boundaries from 'eslint-plugin-boundaries/src/index.js';
 import importPlugin from 'eslint-plugin-import';
 import prettier from 'eslint-config-prettier';
 

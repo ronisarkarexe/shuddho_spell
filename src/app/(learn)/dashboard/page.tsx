@@ -22,7 +22,9 @@ import {
   readVocabularyDrill,
   readVerbDrill,
   readFormalInformal,
+  readFormalInformalProgress,
 } from '@/composition/reads';
+import { FORMAL_INFORMAL_PAGE_SIZE } from '@/components/learning/formal-informal-contracts';
 import { FormalInformalExplorer } from '../library/formal-informal/formal-informal-explorer';
 import { requireUser } from '@/lib/auth/current-user';
 import { publicEnv } from '@/lib/env.public';
@@ -106,6 +108,7 @@ export default async function DashboardPage(): Promise<ReactElement> {
     vocabulary,
     verbs,
     formalInformal,
+    formalInformalProgress,
   ] = await Promise.all([
     readLearnerDashboard(user.userId),
     readProgressSummary(user.userId),
@@ -116,7 +119,8 @@ export default async function DashboardPage(): Promise<ReactElement> {
     readWordsPractised(user.userId),
     readVocabularyDrill(VOCABULARY_QUESTIONS),
     readVerbDrill(VERB_QUESTIONS, true),
-    readFormalInformal(24),
+    readFormalInformal(FORMAL_INFORMAL_PAGE_SIZE, 1),
+    readFormalInformalProgress(user.userId),
   ]);
 
   const accuracyPercent = Math.round(summary.overallAccuracy);
@@ -523,8 +527,9 @@ export default async function DashboardPage(): Promise<ReactElement> {
 
         A full-width list rather than a six-question drill: the lesson here is
         seeing the swap, hearing the accent, and reading the meaning. The same
-        explorer lives on `/library/formal-informal`; this is the first page of
-        it, so a learner who opened Today still has every pair one scroll away.
+        explorer lives on `/library/formal-informal`. Today opens on page 1; the
+        library route opens on the page they last stood on. Continue on either
+        screen jumps back there.
       */}
       <section className="col-span-12">
         <div className="card">
@@ -538,7 +543,10 @@ export default async function DashboardPage(): Promise<ReactElement> {
             title="Informal and formal"
           />
           <div className="p-4">
-            <FormalInformalExplorer initialPage={formalInformal} />
+            <FormalInformalExplorer
+              initialPage={formalInformal}
+              initialProgress={formalInformalProgress}
+            />
           </div>
         </div>
       </section>

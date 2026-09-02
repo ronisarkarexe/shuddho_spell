@@ -1469,9 +1469,13 @@ distractor pool — the same reason the IELTS vocabulary stays apart. So:
 Bangla | Bangla`), validated at load, and the screen at `/library/formal-informal` (and
 the dashboard section that embeds the same explorer) is a reference: British IPA and a
 Bangla gloss on both sides, spoken with the browser voice, never written to
-`review_items`. Abbreviations whose spoken form dictionaries disagree on are flagged
-`needsReview`. The British/American table is two rows per idea so a search for `mate`
-or `dude` both land.
+`review_items`. Each row is numbered in corpus order (informal on the left, formal on
+the right) and the list is paged. Where they stopped is a row in
+`formal_informal_progress` — last page, last serial, furthest pair reached — written
+by the server from the page number they opened, never from localStorage, so coming
+back lands on that page. Abbreviations whose spoken form dictionaries disagree on are
+flagged `needsReview`. The British/American table is two rows per idea so a search for
+`mate` or `dude` both land.
 
 ### Open — needs the user, not me
 

@@ -26,6 +26,10 @@ import { createGetVerbDrillHandler } from '@/modules/library/presentation/handle
 import { createGetVocabularyHandler } from '@/modules/library/presentation/handlers/get-vocabulary';
 import { createGetVocabularyDrillHandler } from '@/modules/library/presentation/handlers/get-vocabulary-drill';
 import { createGetFormalInformalHandler } from '@/modules/library/presentation/handlers/get-formal-informal';
+import {
+  createGetFormalInformalProgressHandler,
+  createSaveFormalInformalProgressHandler,
+} from '@/modules/library/presentation/handlers/formal-informal-progress';
 import { createGetWordFamiliesHandler } from '@/modules/library/presentation/handlers/get-word-families';
 import { createCompleteSessionHandler } from '@/modules/lessons/presentation/handlers/complete-session';
 import { createAdvanceStageHandler } from '@/modules/lessons/presentation/handlers/advance-stage';
@@ -62,6 +66,8 @@ import {
   makeGetVocabulary,
   makeGetVocabularyDrill,
   makeGetFormalInformal,
+  makeGetFormalInformalProgress,
+  makeSaveFormalInformalProgress,
   makeGetWordFamilies,
   makeVerifyCertificate,
   makeGetMe,
@@ -297,6 +303,14 @@ export const getVocabularyDrillHandler = createGetVocabularyDrillHandler(() =>
  */
 export const getFormalInformalHandler = createGetFormalInformalHandler(() =>
   makeGetFormalInformal(container()),
+);
+
+export const getFormalInformalProgressHandler = createGetFormalInformalProgressHandler(() =>
+  makeGetFormalInformalProgress(container()),
+);
+
+export const saveFormalInformalProgressHandler = createSaveFormalInformalProgressHandler(() =>
+  makeSaveFormalInformalProgress(container()),
 );
 
 /** The verb reference — the third of the three library screens. */
