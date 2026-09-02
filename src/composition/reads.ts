@@ -20,6 +20,7 @@ import { type IVerbPage } from '@/modules/library/application/dto/verb-view';
 import { type IVocabularyDrill } from '@/modules/library/application/dto/vocabulary-drill';
 import { type IVocabularyPage } from '@/modules/library/application/dto/vocabulary-view';
 import { type IFormalInformalPage, type IFormalInformalProgressView } from '@/modules/library/application/dto/formal-informal-view';
+import { type ISaifursPage, type ISaifursProgressView } from '@/modules/library/application/dto/saifurs-view';
 import { type IWordFamilyPage } from '@/modules/library/application/dto/word-family-view';
 import { type IWordPhonemeStrip } from '@/modules/library/application/dto/phoneme-strip';
 import { type IProgramDayDetail } from '@/modules/program/application/dto/program-day-detail';
@@ -62,6 +63,8 @@ import {
   makeGetVocabularyDrill,
   makeGetFormalInformal,
   makeGetFormalInformalProgress,
+  makeGetSaifursVocabulary,
+  makeGetSaifursProgress,
   makeGetWordFamilies,
   makeGetPhonemeStrips,
   makeGetPracticeQueue,
@@ -256,6 +259,16 @@ export const readFormalInformal = cache(
 export const readFormalInformalProgress = cache(
   async (userId: string): Promise<IFormalInformalProgressView> =>
     makeGetFormalInformalProgress(createContainer(crypto.randomUUID())).execute({ userId }),
+);
+
+export const readSaifursVocabulary = cache(
+  async (pageSize: number, page = 1): Promise<ISaifursPage> =>
+    makeGetSaifursVocabulary(createContainer(crypto.randomUUID())).execute({ pageSize, page }),
+);
+
+export const readSaifursProgress = cache(
+  async (userId: string): Promise<ISaifursProgressView> =>
+    makeGetSaifursProgress(createContainer(crypto.randomUUID())).execute({ userId }),
 );
 
 /**

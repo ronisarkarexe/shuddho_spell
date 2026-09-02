@@ -38,6 +38,8 @@ import { type IWordFamilySource } from '@/modules/library/domain/repositories/wo
 import { type IVocabularySource } from '@/modules/library/domain/repositories/vocabulary-source';
 import { type IFormalInformalSource } from '@/modules/library/domain/repositories/formal-informal-source';
 import { type IFormalInformalProgressRepository } from '@/modules/library/domain/repositories/formal-informal-progress-repository';
+import { type ISaifursSource } from '@/modules/library/domain/repositories/saifurs-source';
+import { type ISaifursProgressRepository } from '@/modules/library/domain/repositories/saifurs-progress-repository';
 import { type IVerbSource } from '@/modules/library/domain/repositories/verb-source';
 import { type ICourseWordIndex } from '@/modules/library/domain/repositories/course-word-index';
 import { type ISentenceItemRepository } from '@/modules/library/domain/repositories/sentence-item-repository';
@@ -51,6 +53,8 @@ import { WordFamilyContentSource } from '@/modules/library/infrastructure/persis
 import { VocabularyContentSource } from '@/modules/library/infrastructure/persistence/content/vocabulary.source';
 import { FormalInformalContentSource } from '@/modules/library/infrastructure/persistence/content/formal-informal.source';
 import { SupabaseFormalInformalProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/formal-informal-progress.repository';
+import { SaifursContentSource } from '@/modules/library/infrastructure/persistence/content/saifurs.source';
+import { SupabaseSaifursProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/saifurs-progress.repository';
 import { VerbContentSource } from '@/modules/library/infrastructure/persistence/content/verb.source';
 import { ContentCourseWordIndex } from '@/modules/library/infrastructure/persistence/content/course-word.index';
 import { SupabaseSentenceItemRepository } from '@/modules/library/infrastructure/persistence/supabase/sentence-item.repository';
@@ -131,6 +135,17 @@ export interface IContainer {
    * from a page number — the serial is computed, never posted.
    */
   readonly formalInformalProgress: IFormalInformalProgressRepository;
+  /**
+   * Saifur's-style admission vocabulary — word, two accents, Bangla, synonym,
+   * antonym and a sentence. Content again, and a sixth corpus: it is a study
+   * book, not a band-swap list and not a week of the course.
+   */
+  readonly saifurs: ISaifursSource;
+  /**
+   * Where this learner stopped in that book. One row per profile, written
+   * from a page number — the serial is computed, never posted.
+   */
+  readonly saifursProgress: ISaifursProgressRepository;
   /**
    * The thousand verbs in all five forms. Content again, and the fourth corpus
    * — the only one whose forms are mostly *derived* rather than stored, which
@@ -240,6 +255,7 @@ export function createContainer(requestId: string): IContainer {
   const wordFamilies = new WordFamilyContentSource();
   const vocabulary = new VocabularyContentSource();
   const formalInformal = new FormalInformalContentSource();
+  const saifurs = new SaifursContentSource();
   const verbs = new VerbContentSource();
   const courseWords = new ContentCourseWordIndex();
   const speechScorer = new ConfusionMapSpeechScorer();
@@ -267,6 +283,8 @@ export function createContainer(requestId: string): IContainer {
     vocabulary,
     formalInformal,
     formalInformalProgress: new SupabaseFormalInformalProgressRepository(db),
+    saifurs,
+    saifursProgress: new SupabaseSaifursProgressRepository(db),
     verbs,
     courseWords,
     ruleFamilies: new SupabaseRuleFamilyRepository(db),

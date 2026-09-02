@@ -43,6 +43,10 @@ import {
   vocabularyDrillQuerySchema,
   vocabularyQuerySchema,
 } from '@/modules/library/presentation/dto/vocabulary-requests';
+import {
+  saifursQuerySchema,
+  saveSaifursProgressBodySchema,
+} from '@/modules/library/presentation/dto/saifurs-requests';
 import { wordFamilyQuerySchema } from '@/modules/library/presentation/dto/word-family-requests';
 import {
   demoSpeechBodySchema,
@@ -293,6 +297,24 @@ registry.registerPath({
     'A page of the IELTS vocabulary pairs — a word and what it can be swapped for. Reference content, identical for every learner; authenticated on the same terms as the families, because it is what a subscriber paid for rather than because it is private.',
   request: { query: vocabularyQuerySchema },
   responses: ok(z.unknown(), 'The page, the topic and part-of-speech indexes, and the cursor for the next one.'),
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/library/saifurs',
+  summary:
+    'A numbered page of Saifur’s vocabulary — twenty-five words, British and American IPA, Bangla, synonyms, antonyms and a sentence. Reference content, authenticated on the same terms as the families.',
+  request: { query: saifursQuerySchema },
+  responses: ok(z.unknown(), 'The page, the letter and part-of-speech indexes, and the page number.'),
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/library/saifurs/progress',
+  summary:
+    'Bookmark the last unfiltered page of Saifur’s vocabulary. The serial is computed on the server from the page number; the client may not post a count.',
+  request: { body: { content: { 'application/json': { schema: saveSaifursProgressBodySchema } } } },
+  responses: ok(z.unknown(), 'The bookmark.'),
 });
 
 registry.registerPath({

@@ -265,6 +265,8 @@ Recorded as decisions in section 5. Same convention, same wiring.
 | `NOTIFICATION_PREFERENCE_REPOSITORY` | `INotificationPreferenceRepository` | notifications | 8 |
 | `PUSH_SUBSCRIPTION_REPOSITORY` | `IPushSubscriptionRepository` | notifications | 8 |
 | `CERTIFICATE_REPOSITORY` | `ICertificateRepository` | certificates | 12 |
+| `SAIFURS_SOURCE` | `ISaifursSource` | library | 13 |
+| `SAIFURS_PROGRESS_REPOSITORY` | `ISaifursProgressRepository` | library | 13 |
 
 ### Application ports — `application/ports/`
 
@@ -335,6 +337,8 @@ Enumerated columns are `text` + a `check` constraint mirroring the TypeScript co
 | `005` | `push_subscriptions` | notifications | own `profile_id` |
 | `006` | `certificates` | certificates | own `profile_id` + **public read of the verification code only** |
 | `009` | `rate_limits` | infrastructure | service role only (see decision D6) |
+| `023` | `formal_informal_progress` | learner | own `profile_id` · no client write |
+| `024` | `saifurs_vocabulary_progress` | learner | own `profile_id` · no client write |
 
 Every learner table carries
 `profile_id uuid not null references learner_profiles(id) on delete cascade`.
@@ -1478,6 +1482,9 @@ by the server from the page number they opened, never from localStorage, so comi
 back lands on that page. Abbreviations whose spoken form dictionaries disagree on are
 flagged `needsReview`. The British/American table is two rows per idea so a search for
 `mate` or `dude` both land.
+
+**D82 — Saifur's vocabulary is a sixth content corpus, not a printed book (user request, 2026-09-02).**
+The *shape* is the one Bangladeshi learners already know from an admission vocabulary book: word, pronunciation, Bangla meaning, synonym, antonym, sentence. The entries are original public-dictionary words, not a transcription of any copyrighted list. Folding them into `words` would put hundreds of untaught items into the exam distractor pool — the same reason the IELTS vocabulary stays apart. So: `content/saifurs-vocabulary/` holds one line per card (`word | pos | ipaBr | ipaUs | bangla | synonyms | antonyms | exampleEn | exampleBn`), validated at load, and the screen at `/library/saifurs` is a reference. Twenty-five words to a page. British and American IPA sit on the same card; the learner picks which accent the browser speaks. Two modes share the page: **Read** is the book, **Learn** is one card at a time with the meaning hidden until they ask. Where they stopped is a row in `saifurs_vocabulary_progress` — last page, last serial, furthest word reached — written by the server from the page number they opened, never from localStorage.
 
 ### Open — needs the user, not me
 
