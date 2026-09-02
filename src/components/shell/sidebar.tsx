@@ -64,7 +64,7 @@ export function Sidebar({ collapsed, onToggle, isAdmin }: ISidebarProps): ReactE
     <nav
       aria-label={t('primary')}
       className={cn(
-        'flex shrink-0 flex-col border-r border-hairline bg-surface',
+        'flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-r border-hairline bg-surface',
         // Below `md` the rail is always the 56px icon rail: 232px of a 375px
         // screen is not a navigation column, it is most of the screen. The
         // cookie still decides on a desktop — `max-md:` overrides it only
@@ -87,7 +87,14 @@ export function Sidebar({ collapsed, onToggle, isAdmin }: ISidebarProps): ReactE
         </Link>
       </div>
 
-      <ul className="flex flex-1 flex-col gap-0.5 p-2">
+      {/*
+        The list grew past one viewport — families, vocabulary, informal/formal,
+        verbs, prepositions, question words, gap-fill — so without a scroll
+        region here the footer (Admin, Settings) is pushed off the screen.
+        `min-h-0` is what lets a flex child shrink; `overflow-y-auto` is what
+        scrolls the items above Admin. Admin itself stays put below.
+      */}
+      <ul className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-2">
         {NAV_ITEMS.map((item) => (
           <RailLink
             active={current === item.href}
@@ -99,7 +106,7 @@ export function Sidebar({ collapsed, onToggle, isAdmin }: ISidebarProps): ReactE
         ))}
       </ul>
 
-      <ul className="flex flex-col gap-0.5 border-t border-hairline p-2">
+      <ul className="flex shrink-0 flex-col gap-0.5 border-t border-hairline p-2">
         {footer.map((item) => (
           <RailLink
             active={current === item.href}
@@ -120,7 +127,7 @@ export function Sidebar({ collapsed, onToggle, isAdmin }: ISidebarProps): ReactE
       */}
       <div
         className={cn(
-          'border-t border-hairline p-2',
+          'shrink-0 border-t border-hairline p-2',
           collapsed ? 'flex justify-center' : 'max-md:flex max-md:justify-center',
         )}
       >
