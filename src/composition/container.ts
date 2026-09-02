@@ -36,6 +36,7 @@ import { type IRuleFamilyRepository } from '@/modules/library/domain/repositorie
 import { type IGrammarExampleSource } from '@/modules/library/domain/repositories/grammar-example-source';
 import { type IWordFamilySource } from '@/modules/library/domain/repositories/word-family-source';
 import { type IVocabularySource } from '@/modules/library/domain/repositories/vocabulary-source';
+import { type IFormalInformalSource } from '@/modules/library/domain/repositories/formal-informal-source';
 import { type IVerbSource } from '@/modules/library/domain/repositories/verb-source';
 import { type ICourseWordIndex } from '@/modules/library/domain/repositories/course-word-index';
 import { type ISentenceItemRepository } from '@/modules/library/domain/repositories/sentence-item-repository';
@@ -47,6 +48,7 @@ import { SupabaseRuleFamilyRepository } from '@/modules/library/infrastructure/p
 import { GrammarContentExampleSource } from '@/modules/library/infrastructure/persistence/content/grammar-example.source';
 import { WordFamilyContentSource } from '@/modules/library/infrastructure/persistence/content/word-family.source';
 import { VocabularyContentSource } from '@/modules/library/infrastructure/persistence/content/vocabulary.source';
+import { FormalInformalContentSource } from '@/modules/library/infrastructure/persistence/content/formal-informal.source';
 import { VerbContentSource } from '@/modules/library/infrastructure/persistence/content/verb.source';
 import { ContentCourseWordIndex } from '@/modules/library/infrastructure/persistence/content/course-word.index';
 import { SupabaseSentenceItemRepository } from '@/modules/library/infrastructure/persistence/supabase/sentence-item.repository';
@@ -115,6 +117,13 @@ export interface IContainer {
    * why it is kept apart from both the families and the 3,000.
    */
   readonly vocabulary: IVocabularySource;
+  /**
+   * Informal → formal register pairs, with British IPA and Bangla on both
+   * sides. Content again, and a fifth corpus: it is reference, not course,
+   * and it stays apart from the IELTS synonym list because the lesson is
+   * register, not band.
+   */
+  readonly formalInformal: IFormalInformalSource;
   /**
    * The thousand verbs in all five forms. Content again, and the fourth corpus
    * — the only one whose forms are mostly *derived* rather than stored, which
@@ -223,6 +232,7 @@ export function createContainer(requestId: string): IContainer {
   // would be the same answer computed again on every page of the library.
   const wordFamilies = new WordFamilyContentSource();
   const vocabulary = new VocabularyContentSource();
+  const formalInformal = new FormalInformalContentSource();
   const verbs = new VerbContentSource();
   const courseWords = new ContentCourseWordIndex();
   const speechScorer = new ConfusionMapSpeechScorer();
@@ -248,6 +258,7 @@ export function createContainer(requestId: string): IContainer {
     grammarExamples,
     wordFamilies,
     vocabulary,
+    formalInformal,
     verbs,
     courseWords,
     ruleFamilies: new SupabaseRuleFamilyRepository(db),

@@ -19,6 +19,7 @@ import { type IVerbDrill } from '@/modules/library/application/dto/verb-drill';
 import { type IVerbPage } from '@/modules/library/application/dto/verb-view';
 import { type IVocabularyDrill } from '@/modules/library/application/dto/vocabulary-drill';
 import { type IVocabularyPage } from '@/modules/library/application/dto/vocabulary-view';
+import { type IFormalInformalPage } from '@/modules/library/application/dto/formal-informal-view';
 import { type IWordFamilyPage } from '@/modules/library/application/dto/word-family-view';
 import { type IWordPhonemeStrip } from '@/modules/library/application/dto/phoneme-strip';
 import { type IProgramDayDetail } from '@/modules/program/application/dto/program-day-detail';
@@ -59,6 +60,7 @@ import {
   makeGetVerbDrill,
   makeGetVocabulary,
   makeGetVocabularyDrill,
+  makeGetFormalInformal,
   makeGetWordFamilies,
   makeGetPhonemeStrips,
   makeGetPracticeQueue,
@@ -240,6 +242,15 @@ export const readVocabulary = cache(
 export async function readVocabularyDrill(count: number): Promise<IVocabularyDrill> {
   return makeGetVocabularyDrill(createContainer(crypto.randomUUID())).execute({ count });
 }
+
+/**
+ * Informal → formal pairs. `cache` for the reason `readVocabulary` gives: no
+ * query to save, but no reason to derive the same page twice in one render.
+ */
+export const readFormalInformal = cache(
+  async (pageSize: number): Promise<IFormalInformalPage> =>
+    makeGetFormalInformal(createContainer(crypto.randomUUID())).execute({ pageSize }),
+);
 
 /**
  * The verb reference's first page. `cache` for the reason `readVocabulary`

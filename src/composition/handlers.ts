@@ -25,6 +25,7 @@ import { createGetVerbsHandler } from '@/modules/library/presentation/handlers/g
 import { createGetVerbDrillHandler } from '@/modules/library/presentation/handlers/get-verb-drill';
 import { createGetVocabularyHandler } from '@/modules/library/presentation/handlers/get-vocabulary';
 import { createGetVocabularyDrillHandler } from '@/modules/library/presentation/handlers/get-vocabulary-drill';
+import { createGetFormalInformalHandler } from '@/modules/library/presentation/handlers/get-formal-informal';
 import { createGetWordFamiliesHandler } from '@/modules/library/presentation/handlers/get-word-families';
 import { createCompleteSessionHandler } from '@/modules/lessons/presentation/handlers/complete-session';
 import { createAdvanceStageHandler } from '@/modules/lessons/presentation/handlers/advance-stage';
@@ -60,6 +61,7 @@ import {
   makeGetVerbDrill,
   makeGetVocabulary,
   makeGetVocabularyDrill,
+  makeGetFormalInformal,
   makeGetWordFamilies,
   makeVerifyCertificate,
   makeGetMe,
@@ -286,6 +288,15 @@ export const getVocabularyHandler = createGetVocabularyHandler(() =>
  */
 export const getVocabularyDrillHandler = createGetVocabularyDrillHandler(() =>
   makeGetVocabularyDrill(container()),
+);
+
+/**
+ * Informal → formal pairs — same shape as the vocabulary reference: the page
+ * renders its first slice through `reads.ts`, and every filter after that
+ * comes through here.
+ */
+export const getFormalInformalHandler = createGetFormalInformalHandler(() =>
+  makeGetFormalInformal(container()),
 );
 
 /** The verb reference — the third of the three library screens. */

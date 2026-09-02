@@ -21,8 +21,9 @@ export interface INavItem {
  * wrong" wants their own list, and finding the whole 3,000-word library first
  * is the wrong answer arriving before the right one.
  *
- * `/library/families`, `/library/vocabulary`, `/library/verbs`,
- * `/library/prepositions`, `/library/questions` and `/library/patterns` sit
+ * `/library/families`, `/library/vocabulary`, `/library/formal-informal`,
+ * `/library/verbs`, `/library/prepositions`, `/library/questions` and
+ * `/library/patterns` sit
  * directly under `/library` because they are the same shelf: all of them are
  * reference rather than course. Vocabulary and verbs come first of the named
  * lists because a learner arrives knowing they want a better word, or the past
@@ -46,6 +47,7 @@ export const NAV_ITEMS: readonly INavItem[] = Object.freeze([
   { href: '/library', labelKey: 'library', glyph: 'library' },
   { href: '/library/families', labelKey: 'wordFamilies', glyph: 'grammar' },
   { href: '/library/vocabulary', labelKey: 'vocabulary', glyph: 'library' },
+  { href: '/library/formal-informal', labelKey: 'formalInformal', glyph: 'library' },
   { href: '/library/verbs', labelKey: 'verbs', glyph: 'grammar' },
   { href: '/library/prepositions', labelKey: 'prepositions', glyph: 'grammar' },
   { href: '/library/questions', labelKey: 'questionWords', glyph: 'grammar' },
