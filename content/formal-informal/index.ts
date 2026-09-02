@@ -3,6 +3,7 @@ import { PAIRS_ACADEMIC } from './pairs-academic';
 import { PAIRS_ADJECTIVES } from './pairs-adjectives';
 import { PAIRS_BUSINESS } from './pairs-business';
 import { PAIRS_COMMON } from './pairs-common';
+import { PAIRS_MORE } from './pairs-more';
 import { PAIRS_NOUNS } from './pairs-nouns';
 import { PAIRS_SLANG } from './pairs-slang';
 import { PAIRS_SOCIAL } from './pairs-social';
@@ -33,6 +34,7 @@ const GROUPS: readonly IRawFormalInformalGroup[] = [
   PAIRS_ACADEMIC,
   PAIRS_SOCIAL,
   PAIRS_VARIETY,
+  PAIRS_MORE,
 ];
 
 /**
@@ -42,7 +44,7 @@ const GROUPS: readonly IRawFormalInformalGroup[] = [
  * screen a learner reads, and a corpus that fell to 200 after a de-duplication
  * would leave the claim standing and untrue.
  */
-export const FORMAL_INFORMAL_MINIMUM_PAIRS = 300;
+export const FORMAL_INFORMAL_MINIMUM_PAIRS = 1000;
 
 export interface IFormalInformalIssue {
   readonly file: string;

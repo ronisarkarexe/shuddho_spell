@@ -19,7 +19,7 @@ import { type IVerbDrill } from '@/modules/library/application/dto/verb-drill';
 import { type IVerbPage } from '@/modules/library/application/dto/verb-view';
 import { type IVocabularyDrill } from '@/modules/library/application/dto/vocabulary-drill';
 import { type IVocabularyPage } from '@/modules/library/application/dto/vocabulary-view';
-import { type IFormalInformalPage } from '@/modules/library/application/dto/formal-informal-view';
+import { type IFormalInformalPage, type IFormalInformalProgressView } from '@/modules/library/application/dto/formal-informal-view';
 import { type IWordFamilyPage } from '@/modules/library/application/dto/word-family-view';
 import { type IWordPhonemeStrip } from '@/modules/library/application/dto/phoneme-strip';
 import { type IProgramDayDetail } from '@/modules/program/application/dto/program-day-detail';
@@ -61,6 +61,7 @@ import {
   makeGetVocabulary,
   makeGetVocabularyDrill,
   makeGetFormalInformal,
+  makeGetFormalInformalProgress,
   makeGetWordFamilies,
   makeGetPhonemeStrips,
   makeGetPracticeQueue,
@@ -248,8 +249,13 @@ export async function readVocabularyDrill(count: number): Promise<IVocabularyDri
  * query to save, but no reason to derive the same page twice in one render.
  */
 export const readFormalInformal = cache(
-  async (pageSize: number): Promise<IFormalInformalPage> =>
-    makeGetFormalInformal(createContainer(crypto.randomUUID())).execute({ pageSize }),
+  async (pageSize: number, page = 1): Promise<IFormalInformalPage> =>
+    makeGetFormalInformal(createContainer(crypto.randomUUID())).execute({ pageSize, page }),
+);
+
+export const readFormalInformalProgress = cache(
+  async (userId: string): Promise<IFormalInformalProgressView> =>
+    makeGetFormalInformalProgress(createContainer(crypto.randomUUID())).execute({ userId }),
 );
 
 /**

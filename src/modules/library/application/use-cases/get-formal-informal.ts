@@ -9,44 +9,50 @@ import {
 export interface IGetFormalInformalInput {
   readonly topic?: string;
   readonly startsWith?: string;
-  readonly after?: string;
+  /** 1-based. Out of range is clamped, never an error. */
+  readonly page?: number;
   readonly pageSize: number;
 }
 
 const MAX_PAGE_SIZE = 100;
 
 /**
- * A page of informal → formal pairs.
+ * A numbered page of informal → formal pairs.
  *
- * **The tallies are over the whole corpus, and the match count is not.** Both
- * numbers are on the screen at once and they answer different questions —
- * "how much of this is in here" and "how much of it matches what I asked for".
- * The topic index is navigation; a door that vanishes because the current
- * filter excluded it is a door the learner cannot find their way back through.
+ * **Paging is by page number, not a keyset.** The learner needs to know
+ * "I am on page 3 of 50" and to go back there; a cursor that only walks
+ * forward cannot say that. The corpus is a compiled module of a thousand
+ * rows, so offset is cheap and stable.
  *
- * **The order is the corpus's own order**, common first, then the named
- * lists. Paging is a keyset over that order, so a page boundary is stable.
- *
- * No query at all: the corpus is a compiled module.
+ * **Serials are over the whole corpus.** Filtering does not renumber them.
  */
 export class GetFormalInformalUseCase {
   constructor(private readonly source: IFormalInformalSource) {}
 
   async execute(input: IGetFormalInformalInput): Promise<IFormalInformalPage> {
     const all = this.source.listAll();
-    const matched = all.filter((pair) => keeps(pair, input));
+    const serialOf = new Map<string, number>();
 
+    for (let index = 0; index < all.length; index += 1) {
+      const pair = all[index];
+      if (pair !== undefined) {
+        serialOf.set(pair.cursor, index + 1);
+      }
+    }
+
+    const matched = all.filter((pair) => keeps(pair, input));
     const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, input.pageSize));
-    const start =
-      input.after === undefined
-        ? 0
-        : matched.findIndex((pair) => pair.cursor === input.after) + 1;
-    const page = matched.slice(start, start + pageSize);
+    const totalPages = Math.max(1, Math.ceil(matched.length / pageSize));
+    const requested = input.page ?? 1;
+    const page = Math.min(totalPages, Math.max(1, requested));
+    const start = (page - 1) * pageSize;
+    const slice = matched.slice(start, start + pageSize);
 
     return Promise.resolve({
-      pairs: page.map(view),
-      nextCursor:
-        start + pageSize < matched.length ? (page[page.length - 1]?.cursor ?? null) : null,
+      pairs: slice.map((pair) => view(pair, serialOf.get(pair.cursor) ?? 0)),
+      page,
+      totalPages,
+      pageSize,
       matchedPairs: matched.length,
       totalPairs: all.length,
       topics: byTopic(all),
@@ -54,7 +60,7 @@ export class GetFormalInformalUseCase {
   }
 }
 
-function view(pair: FormalInformalPair): IFormalInformalPairView {
+function view(pair: FormalInformalPair, serial: number): IFormalInformalPairView {
   return {
     informal: pair.informal,
     formal: pair.formal,
@@ -67,6 +73,7 @@ function view(pair: FormalInformalPair): IFormalInformalPairView {
     isInformalPhrase: pair.isInformalPhrase,
     isFormalPhrase: pair.isFormalPhrase,
     cursor: pair.cursor,
+    serial,
   };
 }
 

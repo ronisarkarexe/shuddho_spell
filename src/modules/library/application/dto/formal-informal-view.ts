@@ -10,8 +10,15 @@ export interface IFormalInformalPairView {
   readonly needsReview: boolean;
   readonly isInformalPhrase: boolean;
   readonly isFormalPhrase: boolean;
-  /** `informal::formal` — the keyset cursor and the row key. */
+  /** `informal::formal` — stable row key. */
   readonly cursor: string;
+  /**
+   * 1-based position in the whole corpus, not in the current filter.
+   *
+   * A learner who says "I stopped at 247" means pair 247 of the book, and a
+   * filter that renumbered the page would make that sentence untrue.
+   */
+  readonly serial: number;
 }
 
 export interface IFormalInformalTopicTally {
@@ -21,9 +28,19 @@ export interface IFormalInformalTopicTally {
 
 export interface IFormalInformalPage {
   readonly pairs: readonly IFormalInformalPairView[];
-  /** The cursor to pass as `after` for the next page, or null at the end. */
-  readonly nextCursor: string | null;
+  /** 1-based page of the current filter. */
+  readonly page: number;
+  readonly totalPages: number;
+  readonly pageSize: number;
   readonly matchedPairs: number;
   readonly totalPairs: number;
   readonly topics: readonly IFormalInformalTopicTally[];
+}
+
+/** How far this learner has read in the unfiltered list. */
+export interface IFormalInformalProgressView {
+  readonly lastPage: number;
+  readonly lastSerial: number;
+  readonly pairsRead: number;
+  readonly totalPairs: number;
 }

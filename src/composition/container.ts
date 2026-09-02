@@ -37,6 +37,7 @@ import { type IGrammarExampleSource } from '@/modules/library/domain/repositorie
 import { type IWordFamilySource } from '@/modules/library/domain/repositories/word-family-source';
 import { type IVocabularySource } from '@/modules/library/domain/repositories/vocabulary-source';
 import { type IFormalInformalSource } from '@/modules/library/domain/repositories/formal-informal-source';
+import { type IFormalInformalProgressRepository } from '@/modules/library/domain/repositories/formal-informal-progress-repository';
 import { type IVerbSource } from '@/modules/library/domain/repositories/verb-source';
 import { type ICourseWordIndex } from '@/modules/library/domain/repositories/course-word-index';
 import { type ISentenceItemRepository } from '@/modules/library/domain/repositories/sentence-item-repository';
@@ -49,6 +50,7 @@ import { GrammarContentExampleSource } from '@/modules/library/infrastructure/pe
 import { WordFamilyContentSource } from '@/modules/library/infrastructure/persistence/content/word-family.source';
 import { VocabularyContentSource } from '@/modules/library/infrastructure/persistence/content/vocabulary.source';
 import { FormalInformalContentSource } from '@/modules/library/infrastructure/persistence/content/formal-informal.source';
+import { SupabaseFormalInformalProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/formal-informal-progress.repository';
 import { VerbContentSource } from '@/modules/library/infrastructure/persistence/content/verb.source';
 import { ContentCourseWordIndex } from '@/modules/library/infrastructure/persistence/content/course-word.index';
 import { SupabaseSentenceItemRepository } from '@/modules/library/infrastructure/persistence/supabase/sentence-item.repository';
@@ -124,6 +126,11 @@ export interface IContainer {
    * register, not band.
    */
   readonly formalInformal: IFormalInformalSource;
+  /**
+   * Where this learner stopped in that list. One row per profile, written
+   * from a page number — the serial is computed, never posted.
+   */
+  readonly formalInformalProgress: IFormalInformalProgressRepository;
   /**
    * The thousand verbs in all five forms. Content again, and the fourth corpus
    * — the only one whose forms are mostly *derived* rather than stored, which
@@ -259,6 +266,7 @@ export function createContainer(requestId: string): IContainer {
     wordFamilies,
     vocabulary,
     formalInformal,
+    formalInformalProgress: new SupabaseFormalInformalProgressRepository(db),
     verbs,
     courseWords,
     ruleFamilies: new SupabaseRuleFamilyRepository(db),

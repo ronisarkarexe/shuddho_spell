@@ -55,6 +55,8 @@ import { GetVerbDrillUseCase } from '@/modules/library/application/use-cases/get
 import { GetVocabularyUseCase } from '@/modules/library/application/use-cases/get-vocabulary';
 import { GetVocabularyDrillUseCase } from '@/modules/library/application/use-cases/get-vocabulary-drill';
 import { GetFormalInformalUseCase } from '@/modules/library/application/use-cases/get-formal-informal';
+import { GetFormalInformalProgressUseCase } from '@/modules/library/application/use-cases/get-formal-informal-progress';
+import { SaveFormalInformalProgressUseCase } from '@/modules/library/application/use-cases/save-formal-informal-progress';
 import { GetWordFamiliesUseCase } from '@/modules/library/application/use-cases/get-word-families';
 import { ScoreDemoSpeechUseCase } from '@/modules/library/application/use-cases/score-demo-speech';
 import { GetLibraryPageUseCase } from '@/modules/library/application/use-cases/get-library-page';
@@ -583,6 +585,22 @@ export function makeGetVocabularyDrill(c: IContainer): GetVocabularyDrillUseCase
  */
 export function makeGetFormalInformal(c: IContainer): GetFormalInformalUseCase {
   return new GetFormalInformalUseCase(c.formalInformal);
+}
+
+export function makeGetFormalInformalProgress(c: IContainer): GetFormalInformalProgressUseCase {
+  return new GetFormalInformalProgressUseCase(
+    c.learnerProfiles,
+    c.formalInformalProgress,
+    c.formalInformal,
+  );
+}
+
+export function makeSaveFormalInformalProgress(c: IContainer): SaveFormalInformalProgressUseCase {
+  return new SaveFormalInformalProgressUseCase(
+    c.learnerProfiles,
+    c.formalInformalProgress,
+    c.formalInformal,
+  );
 }
 
 /**
