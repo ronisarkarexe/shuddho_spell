@@ -1448,6 +1448,19 @@ landing page, the dashboard and the chart itself is a shuffle over sixteen autho
 inside the component; nothing is stored, and there is no endpoint, because a fresh round is not a
 new fact. The chart lives at `/library/patterns`, on the same rail as the other named references.
 
+**D80 — appearance is a cookie, not a column (user request, 2026-09-02).** Dark mode is a
+layout preference like the sidebar collapse: it has to be known on the first paint or the canvas
+flashes. `localStorage` is too late; a `learner_profiles` column would need a round-trip and would
+not apply before the session. A year-long `shuddhospell.theme` cookie (`light` | `dark` | `system`)
+is readable in the root layout and written by the Settings → Preferences control, the same way the
+rail width is. Default is `light`, so existing learners keep the paper they already know — dark is
+an option they turn on, not a surprise from the OS. The signed-in shell, the lesson, the exam and
+the marketing page all sit under one `<html>` class, so one preference covers the whole
+application. Brand fills (`primary-900`, secondary, tertiary, mastered) stay the hex they are —
+they are the navy button and the exam room, not the page paper — and the canvas, panel, ink,
+hairline and muted tokens swap through CSS variables. `text-surface` stays white because every use
+of it is text on a filled brand colour.
+
 ### Open — needs the user, not me
 
 **O3 — the 24 flagged transcriptions need a human ear (F9.9).** They are listed by

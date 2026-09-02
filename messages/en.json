@@ -79,5 +79,15 @@
     "streak": "Streak",
     "signedInAs": "Signed in as {name}",
     "signOut": "Sign out"
+  },
+  "settings": {
+    "title": "Settings",
+    "preferences": "Preferences",
+    "appearanceHelp": "Applies across the app after you sign in — dashboard, lessons, exams and this page.",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "notifications": "Notifications"
   }
 }

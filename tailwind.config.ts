@@ -3,15 +3,22 @@ import type { Config } from 'tailwindcss';
 /**
  * Tokens come from ui_images/image copy 4.png and .claude/docs/12-design-system.md.
  * Where the two disagree, the image wins.
+ *
+ * Semantic tokens (canvas, surface, ink, hairline, muted, the light primary
+ * tints) are CSS variables so `html.dark` can swap the paper. Brand fills
+ * stay hex: `primary-900` is the navy button and the exam room, and several
+ * of those fills are used with an opacity modifier (`bg-primary-900/40`)
+ * which Tailwind cannot apply to a bare `var(--token)`.
  */
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         primary: {
-          50: '#EEF1F8',
-          100: '#C9D2E8',
+          50: 'var(--primary-50)',
+          100: 'var(--primary-100)',
           300: '#8496C4',
           500: '#3B4E86',
           700: '#243766',
@@ -24,17 +31,17 @@ const config: Config = {
           700: '#B97A1F',
         },
         tertiary: {
-          100: '#F5D4CF',
+          100: 'var(--tertiary-100)',
           300: '#E29187',
           500: '#C24A3C',
           700: '#93342A',
         },
         neutral: {
-          50: '#F4F6F2',
-          100: '#E9ECE6',
-          300: '#C7CCD8',
-          500: '#6B7280',
-          700: '#3F4451',
+          50: 'var(--canvas)',
+          100: 'var(--neutral-100)',
+          300: 'var(--neutral-300)',
+          500: 'var(--neutral-500)',
+          700: 'var(--neutral-700)',
           900: '#1B1D22',
         },
         /**
@@ -44,17 +51,17 @@ const config: Config = {
          * one place.
          */
         heat: {
-          0: '#EDEFF3',
+          0: 'var(--heat-0)',
           1: '#C7CCD8',
           2: '#F7DFB8',
           3: '#E9A13B',
           4: '#0E7A55',
         },
-        surface: '#FFFFFF',
-        hairline: '#E4E6E0',
-        muted: '#6B7280',
+        surface: 'var(--surface)',
+        hairline: 'var(--hairline)',
+        muted: 'var(--muted)',
         mastered: '#0E7A55',
-        cold: '#C7CCD8',
+        cold: 'var(--cold)',
       },
       fontFamily: {
         display: ['var(--font-display)', 'ui-sans-serif', 'sans-serif'],

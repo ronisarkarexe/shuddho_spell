@@ -79,5 +79,15 @@
     "streak": "ধারা",
     "signedInAs": "{name} হিসেবে সাইন ইন করা আছে",
     "signOut": "সাইন আউট"
+  },
+  "settings": {
+    "title": "সেটিংস",
+    "preferences": "পছন্দ",
+    "appearanceHelp": "সাইন ইনের পর পুরো অ্যাপ জুড়ে লাগে — ড্যাশবোর্ড, পাঠ, পরীক্ষা এবং এই পাতা।",
+    "theme": "পটভূমি",
+    "themeLight": "হালকা",
+    "themeDark": "গাঢ়",
+    "themeSystem": "ডিভাইসের সেটিং",
+    "notifications": "বিজ্ঞপ্তি"
   }
 }
