@@ -1459,7 +1459,9 @@ the marketing page all sit under one `<html>` class, so one preference covers th
 application. Brand fills (`primary-900`, secondary, tertiary, mastered) stay the hex they are —
 they are the navy button and the exam room, not the page paper — and the canvas, panel, ink,
 hairline and muted tokens swap through CSS variables. `text-surface` stays white because every use
-of it is text on a filled brand colour.
+of it is text on a filled brand colour. `text-primary-100` and `border-primary-100` stay the light
+hex for the same reason — pale ink on navy (hero, exam, dictation demo) — while `bg-primary-100`
+is the chip fill that remaps.
 
 **D81 — informal → formal is a fifth content corpus, not a week of the course (user request, 2026-09-02).**
 The EngDic formal/informal list is register, not synonymy and not the 28-day spelling
