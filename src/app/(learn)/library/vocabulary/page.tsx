@@ -1,6 +1,7 @@
 import { type ReactElement } from 'react';
 import { VocabularyDrill } from '@/components/learning/vocabulary-drill';
-import { readVocabulary, readVocabularyDrill } from '@/composition/reads';
+import { VOCABULARY_PAGE_SIZE } from '@/components/learning/vocabulary-contracts';
+import { readAudioPreferences, readVocabulary, readVocabularyDrill } from '@/composition/reads';
 import { requireUser } from '@/lib/auth/current-user';
 import { VocabularyExplorer } from './vocabulary-explorer';
 
@@ -24,15 +25,16 @@ import { VocabularyExplorer } from './vocabulary-explorer';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const PAGE_SIZE = 24;
+const PAGE_SIZE = VOCABULARY_PAGE_SIZE;
 const DRILL_SIZE = 8;
 
 export default async function VocabularyPage(): Promise<ReactElement> {
-  await requireUser();
+  const user = await requireUser();
 
-  const [page, drill] = await Promise.all([
+  const [page, drill, audio] = await Promise.all([
     readVocabulary(PAGE_SIZE),
     readVocabularyDrill(DRILL_SIZE),
+    readAudioPreferences(user.userId),
   ]);
 
   return (
@@ -68,7 +70,7 @@ export default async function VocabularyPage(): Promise<ReactElement> {
       </section>
 
       <section className="col-span-12 lg:col-span-7">
-        <VocabularyExplorer initialPage={page} />
+        <VocabularyExplorer initialAccent={audio.accent} initialPage={page} />
       </section>
     </>
   );

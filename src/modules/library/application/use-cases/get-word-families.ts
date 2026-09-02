@@ -18,6 +18,8 @@ export interface IGetWordFamiliesInput {
   readonly startsWith?: string;
   /** The root of the last family on the previous page. */
   readonly after?: string;
+  /** 1-based. When set, `after` is ignored. Out of range is clamped. */
+  readonly page?: number;
   readonly pageSize: number;
 }
 
@@ -57,16 +59,26 @@ export class GetWordFamiliesUseCase {
     const matched = all.filter((family) => this.keeps(family, input));
 
     const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, input.pageSize));
+    const totalPages = Math.max(1, Math.ceil(matched.length / pageSize));
     const start =
-      input.after === undefined
-        ? 0
-        : matched.findIndex((family) => family.root === input.after) + 1;
+      input.page !== undefined
+        ? (Math.min(totalPages, Math.max(1, input.page)) - 1) * pageSize
+        : input.after === undefined
+          ? 0
+          : matched.findIndex((family) => family.root === input.after) + 1;
+    const pageNumber =
+      input.page !== undefined
+        ? Math.min(totalPages, Math.max(1, input.page))
+        : Math.min(totalPages, Math.floor(start / pageSize) + 1);
     const page = matched.slice(start, start + pageSize);
 
     return {
       families: page.map((family) => this.view(family, statements)),
       nextCursor:
         start + pageSize < matched.length ? (page[page.length - 1]?.root ?? null) : null,
+      page: pageNumber,
+      totalPages,
+      pageSize,
       matchedFamilies: matched.length,
       matchedWords: countWords(matched),
       totalFamilies: all.length,

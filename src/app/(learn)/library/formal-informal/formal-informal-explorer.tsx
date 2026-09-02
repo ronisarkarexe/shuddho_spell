@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
 import { Glyph } from '@/components/icons/glyph';
 import {
@@ -10,6 +11,14 @@ import {
   type FormalInformalPairView,
   type FormalInformalProgress,
 } from '@/components/learning/formal-informal-contracts';
+import { LearnStepper } from '@/components/learning/learn-stepper';
+import { NumberedPager } from '@/components/learning/numbered-pager';
+import {
+  StudyToggles,
+  studyLang,
+  type StudyAccent,
+  type StudyMode,
+} from '@/components/learning/study-toggles';
 import { apiFetch } from '@/lib/api/client';
 import { useSpeech } from '@/lib/audio/use-speech';
 import { DICTATION_RATE, SENTENCE_RATE } from '@/lib/audio/voices';
@@ -18,9 +27,10 @@ import { cn } from '@/lib/cn';
 export interface IFormalInformalExplorerProps {
   readonly initialPage: FormalInformalPage;
   readonly initialProgress: FormalInformalProgress;
+  readonly initialAccent?: StudyAccent;
+  readonly lockedTopic?: string;
+  readonly pageSize?: number;
 }
-
-const LANG = 'en-GB';
 
 interface IFilters {
   readonly topic: string;
@@ -39,6 +49,9 @@ const NO_FILTERS: IFilters = { topic: '', startsWith: '' };
 export function FormalInformalExplorer({
   initialPage,
   initialProgress,
+  initialAccent = 'british',
+  lockedTopic,
+  pageSize = FORMAL_INFORMAL_PAGE_SIZE,
 }: IFormalInformalExplorerProps): ReactElement {
   const [page, setPage] = useState<FormalInformalPage>(initialPage);
   const [pageNumber, setPageNumber] = useState(initialPage.page);
@@ -48,10 +61,15 @@ export function FormalInformalExplorer({
   const [failed, setFailed] = useState(false);
   const [progress, setProgress] = useState<FormalInformalProgress>(initialProgress);
   const [jumpValue, setJumpValue] = useState(String(initialPage.page));
+  const [mode, setMode] = useState<StudyMode>('read');
+  const [accent, setAccent] = useState<StudyAccent>(initialAccent);
+  const [learnIndex, setLearnIndex] = useState(0);
+  const [revealed, setRevealed] = useState(false);
   const skipFirstFetch = useRef(true);
   const appliedSearch = useRef('');
 
-  const filtered = filters.topic !== '' || filters.startsWith !== '';
+  const filtered = (lockedTopic === undefined && filters.topic !== '') || filters.startsWith !== '';
+  const topicForQuery = lockedTopic ?? (filters.topic === '' ? undefined : filters.topic);
 
   const saveProgress = useCallback((pageToSave: number): void => {
     void apiFetch('/api/v1/library/formal-informal/progress', {
@@ -97,9 +115,9 @@ export function FormalInformalExplorer({
     void apiFetch('/api/v1/library/formal-informal', {
       schema: formalInformalPageSchema,
       query: {
-        pageSize: FORMAL_INFORMAL_PAGE_SIZE,
+        pageSize,
         page: pageNumber,
-        topic: filters.topic === '' ? undefined : filters.topic,
+        topic: topicForQuery,
         startsWith: filters.startsWith === '' ? undefined : filters.startsWith,
       },
     })
@@ -110,8 +128,10 @@ export function FormalInformalExplorer({
 
         setPage(next);
         setJumpValue(String(next.page));
+        setLearnIndex(0);
+        setRevealed(false);
 
-        if (filters.topic === '' && filters.startsWith === '') {
+        if (lockedTopic === undefined && filters.topic === '' && filters.startsWith === '') {
           saveProgress(next.page);
         }
       })
@@ -129,7 +149,7 @@ export function FormalInformalExplorer({
     return () => {
       live = false;
     };
-  }, [pageNumber, filters, saveProgress]);
+  }, [pageNumber, filters, saveProgress, pageSize, topicForQuery, lockedTopic]);
 
   const goTo = useCallback((nextPage: number): void => {
     setPageNumber(nextPage);
@@ -143,28 +163,57 @@ export function FormalInformalExplorer({
     setJumpValue('1');
   };
 
+  const current = page.pairs[learnIndex] ?? page.pairs[0] ?? null;
+
   return (
     <div className="flex flex-col gap-5">
-      <ProgressBanner
-        onContinue={() => {
-          appliedSearch.current = '';
-          setTyped('');
-          setFilters(NO_FILTERS);
-          goTo(progress.lastPage);
-        }}
-        progress={progress}
-      />
+      {lockedTopic === undefined && (
+        <ProgressBanner
+          onContinue={() => {
+            appliedSearch.current = '';
+            setTyped('');
+            setFilters(NO_FILTERS);
+            goTo(progress.lastPage);
+          }}
+          progress={progress}
+        />
+      )}
 
-      <div className="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="relative min-w-[14rem] flex-1">
+      <div className="flex flex-col gap-3 rounded-card border border-hairline bg-surface p-3 sm:p-4">
+        <StudyToggles
+          accent={accent}
+          mode={mode}
+          onAccent={setAccent}
+          onMode={(next) => {
+            setMode(next);
+            setRevealed(false);
+            setLearnIndex(0);
+          }}
+        />
+
+        {lockedTopic === undefined && (
+          <div className="flex flex-wrap gap-1" role="navigation" aria-label="Topics">
+            {page.topics.map((topic) => (
+              <Link
+                className="min-h-8 rounded-chip border border-neutral-300 px-3 py-1 capitalize text-muted hover:text-primary-900"
+                href={`/library/formal-informal/${topic.topic}`}
+                key={topic.topic}
+              >
+                {topic.topic} <span className="num text-[11px]">{topic.pairs}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <label className="relative min-w-0 flex-1 sm:min-w-[14rem]">
             <span className="sr-only">Find an informal or formal word</span>
             <Glyph
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
               name="search"
             />
             <input
-              className="w-full rounded-control border border-neutral-300 py-2 pl-10 pr-3"
+              className="w-full rounded-control border border-neutral-300 py-2.5 pl-10 pr-3"
               onChange={(event) => {
                 setTyped(event.target.value);
               }}
@@ -174,29 +223,15 @@ export function FormalInformalExplorer({
             />
           </label>
 
-          <select
-            aria-label="Topic"
-            className="rounded-control border border-neutral-300 px-3 py-2"
-            onChange={(event) => {
-              setFilters((current) => ({ ...current, topic: event.target.value }));
-              setPageNumber(1);
-            }}
-            value={filters.topic}
-          >
-            <option value="">Every topic</option>
-            {page.topics.map((topic) => (
-              <option key={topic.topic} value={topic.topic}>
-                {topic.topic} ({topic.pairs})
-              </option>
-            ))}
-          </select>
-
           <button
-            className="rounded-control border border-neutral-300 px-3 py-2 text-muted hover:text-primary-900"
+            className="min-h-10 rounded-control border border-neutral-300 px-3 py-2 text-muted hover:text-primary-900"
             onClick={clearFilters}
             type="button"
           >
             Clear
+            <span className="ml-1 font-bengali" lang="bn">
+              মুছুন
+            </span>
           </button>
         </div>
       </div>
@@ -221,7 +256,7 @@ export function FormalInformalExplorer({
         </p>
       )}
 
-      {page.pairs.length > 0 && (
+      {mode === 'read' && page.pairs.length > 0 && (
         <div className="hidden grid-cols-[3rem_1fr_auto_1fr_5rem] gap-3 px-3 text-[11px] uppercase tracking-wider text-muted md:grid">
           <span className="num">No.</span>
           <span>
@@ -235,17 +270,38 @@ export function FormalInformalExplorer({
         </div>
       )}
 
-      <ul className="flex flex-col gap-2">
-        {page.pairs.map((pair) => (
-          <PairRow key={pair.cursor} pair={pair} />
-        ))}
-      </ul>
+      {mode === 'read' && (
+        <ul className="flex flex-col gap-2">
+          {page.pairs.map((pair) => (
+            <PairRow accent={accent} key={pair.cursor} pair={pair} />
+          ))}
+        </ul>
+      )}
 
-      <Pager
+      {mode === 'learn' && current !== null && (
+        <LearnCard
+          accent={accent}
+          index={learnIndex}
+          onNext={() => {
+            setLearnIndex((currentIndex) => Math.min(page.pairs.length - 1, currentIndex + 1));
+            setRevealed(false);
+          }}
+          onPrevious={() => {
+            setLearnIndex((currentIndex) => Math.max(0, currentIndex - 1));
+            setRevealed(false);
+          }}
+          onReveal={() => {
+            setRevealed(true);
+          }}
+          pair={current}
+          revealed={revealed}
+          total={page.pairs.length}
+        />
+      )}
+
+      <NumberedPager
         jumpValue={jumpValue}
-        onJump={(next) => {
-          goTo(next);
-        }}
+        onJump={goTo}
         onJumpValue={setJumpValue}
         onNext={() => {
           goTo(Math.min(page.totalPages, page.page + 1));
@@ -303,87 +359,15 @@ function ProgressBanner({
   );
 }
 
-function Pager({
-  page,
-  totalPages,
-  jumpValue,
-  onPrevious,
-  onNext,
-  onJump,
-  onJumpValue,
+function PairRow({
+  pair,
+  accent,
 }: {
-  readonly page: number;
-  readonly totalPages: number;
-  readonly jumpValue: string;
-  readonly onPrevious: () => void;
-  readonly onNext: () => void;
-  readonly onJump: (page: number) => void;
-  readonly onJumpValue: (value: string) => void;
+  readonly pair: FormalInformalPairView;
+  readonly accent: StudyAccent;
 }): ReactElement {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <button
-        className="rounded-control border border-neutral-300 px-3 py-2 text-muted disabled:opacity-40"
-        disabled={page <= 1}
-        onClick={onPrevious}
-        type="button"
-      >
-        Previous page
-        <span className="ml-1 font-bengali" lang="bn">
-          আগের পাতা
-        </span>
-      </button>
-
-      <form
-        className="flex items-center gap-2"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const next = Number.parseInt(jumpValue, 10);
-
-          if (Number.isFinite(next)) {
-            onJump(Math.min(totalPages, Math.max(1, next)));
-          }
-        }}
-      >
-        <label className="flex items-center gap-2 text-muted">
-          Page
-          <span className="font-bengali" lang="bn">
-            পাতা
-          </span>
-          <input
-            className="num w-16 rounded-control border border-neutral-300 px-2 py-1 text-center"
-            inputMode="numeric"
-            min={1}
-            max={totalPages}
-            onChange={(event) => {
-              onJumpValue(event.target.value);
-            }}
-            value={jumpValue}
-          />
-          of <span className="num">{totalPages}</span>
-        </label>
-        <button className="rounded-control border border-neutral-300 px-3 py-1 text-primary-900" type="submit">
-          Go
-        </button>
-      </form>
-
-      <button
-        className="rounded-control border border-neutral-300 px-3 py-2 text-primary-900 disabled:opacity-40"
-        disabled={page >= totalPages}
-        onClick={onNext}
-        type="button"
-      >
-        Next page
-        <span className="ml-1 font-bengali" lang="bn">
-          পরের পাতা
-        </span>
-      </button>
-    </div>
-  );
-}
-
-function PairRow({ pair }: { readonly pair: FormalInformalPairView }): ReactElement {
   const { supported, say } = useSpeech();
+  const lang = studyLang(accent);
 
   return (
     <li className="rounded-card border border-hairline bg-surface px-3 py-2">
@@ -395,6 +379,7 @@ function PairRow({ pair }: { readonly pair: FormalInformalPairView }): ReactElem
           isPhrase={pair.isInformalPhrase}
           label="Informal"
           labelBn="অনানুষ্ঠানিক"
+          lang={lang}
           say={supported ? say : null}
           word={pair.informal}
         />
@@ -405,6 +390,7 @@ function PairRow({ pair }: { readonly pair: FormalInformalPairView }): ReactElem
           isPhrase={pair.isFormalPhrase}
           label="Formal"
           labelBn="আনুষ্ঠানিক"
+          lang={lang}
           say={supported ? say : null}
           tone="formal"
           word={pair.formal}
@@ -412,6 +398,94 @@ function PairRow({ pair }: { readonly pair: FormalInformalPairView }): ReactElem
         <span className="text-[11px] capitalize text-muted">{pair.topic}</span>
       </div>
     </li>
+  );
+}
+
+function LearnCard({
+  pair,
+  accent,
+  index,
+  total,
+  revealed,
+  onReveal,
+  onNext,
+  onPrevious,
+}: {
+  readonly pair: FormalInformalPairView;
+  readonly accent: StudyAccent;
+  readonly index: number;
+  readonly total: number;
+  readonly revealed: boolean;
+  readonly onReveal: () => void;
+  readonly onNext: () => void;
+  readonly onPrevious: () => void;
+}): ReactElement {
+  const { supported, say } = useSpeech();
+  const lang = studyLang(accent);
+
+  return (
+    <div className="flex flex-col gap-4 rounded-card border border-hairline bg-surface p-4 sm:p-6">
+      <p className="num text-muted">
+        {String(index + 1)} of {String(total)} on this page
+        <span className="ml-2 font-bengali" lang="bn">
+          এই পাতায়
+        </span>
+      </p>
+
+      <div className="flex flex-col items-start gap-2">
+        <p className="label">
+          Informal <span className="font-bengali normal-case tracking-normal">অনানুষ্ঠানিক</span>
+        </p>
+        <p className="font-display text-3xl tracking-tight text-primary-900 sm:text-4xl">
+          {pair.informal}
+        </p>
+        {supported && (
+          <button
+            aria-label={`Hear ${pair.informal}`}
+            className="inline-flex min-h-9 items-center text-muted hover:text-primary-900"
+            onClick={() => {
+              say(
+                pair.informal,
+                pair.isInformalPhrase ? SENTENCE_RATE : DICTATION_RATE,
+                lang,
+              );
+            }}
+            type="button"
+          >
+            <Glyph name="play" />
+          </button>
+        )}
+      </div>
+
+      {revealed ? (
+        <div className="flex flex-col gap-2 border-t border-hairline pt-4">
+          <p className="label">
+            Formal <span className="font-bengali normal-case tracking-normal">আনুষ্ঠানিক</span>
+          </p>
+          <p className="font-display text-2xl tracking-tight text-mastered">{pair.formal}</p>
+          <p className="num text-[11px] text-muted">/{pair.formalIpa}/</p>
+          <p className="font-bengali text-primary-900" lang="bn">
+            {pair.formalBn}
+          </p>
+          <p className="font-bengali text-muted" lang="bn">
+            {pair.informalBn}
+          </p>
+        </div>
+      ) : (
+        <button
+          className="min-h-12 rounded-control bg-primary-900 px-4 text-surface"
+          onClick={onReveal}
+          type="button"
+        >
+          Show meaning
+          <span className="ml-2 font-bengali" lang="bn">
+            অর্থ দেখুন
+          </span>
+        </button>
+      )}
+
+      <LearnStepper index={index} onNext={onNext} onPrevious={onPrevious} total={total} />
+    </div>
   );
 }
 
@@ -423,6 +497,7 @@ function Side({
   label,
   labelBn,
   say,
+  lang,
   tone = 'informal',
 }: {
   readonly word: string;
@@ -432,6 +507,7 @@ function Side({
   readonly label: string;
   readonly labelBn: string;
   readonly say: ((text: string, rate: number, lang: string) => void) | null;
+  readonly lang: string;
   readonly tone?: 'informal' | 'formal';
 }): ReactElement {
   return (
@@ -445,7 +521,7 @@ function Side({
             aria-label={`Hear ${word}`}
             className="text-neutral-300 hover:text-primary-900"
             onClick={() => {
-              say(word, isPhrase ? SENTENCE_RATE : DICTATION_RATE, LANG);
+              say(word, isPhrase ? SENTENCE_RATE : DICTATION_RATE, lang);
             }}
             type="button"
           >

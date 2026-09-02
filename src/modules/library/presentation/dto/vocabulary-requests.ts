@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { VOCABULARY_POS_TAGS, VOCABULARY_TOPICS } from '../../../../../content/ielts-vocabulary/schema';
+import {
+  VOCABULARY_POS_TAGS,
+  VOCABULARY_TOPICS,
+  type VocabularyTopic,
+} from '../../../../../content/ielts-vocabulary/schema';
 
 /**
  * The parts of speech, as the corpus expands them.
@@ -24,6 +28,7 @@ export const vocabularyQuerySchema = z.object({
   partOfSpeech: z.enum(['noun', 'verb', 'adjective', 'adverb']).optional(),
   startsWith: z.string().max(40).optional(),
   after: z.string().max(60).optional(),
+  page: z.coerce.number().int().min(1).max(500).optional(),
   /**
    * Optional rather than `.default(24)`: `withApi`'s query schema is a
    * `ZodType<TQuery>`, and a default makes input and output differ. The
@@ -40,3 +45,10 @@ export const vocabularyDrillQuerySchema = z.object({
 });
 
 export type VocabularyDrillQuery = z.infer<typeof vocabularyDrillQuerySchema>;
+
+/** The URL topic, or null when it is not one of the corpus's closed list. */
+export function parseVocabularyTopic(value: string): VocabularyTopic | null {
+  const parsed = z.enum(VOCABULARY_TOPICS).safeParse(value);
+
+  return parsed.success ? parsed.data : null;
+}

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { IELTS_SKILLS } from '../../domain/value-objects/ielts-skill';
-import { WORD_FAMILY_TOPICS } from '../../../../../content/word-families/schema';
+import { WORD_FAMILY_TOPICS, type WordFamilyTopic } from '../../../../../content/word-families/schema';
 
 /**
  * The word-family query string.
@@ -20,6 +20,7 @@ export const wordFamilyQuerySchema = z.object({
   ruleFamily: z.string().regex(/^[a-z0-9_]+$/u).max(60).optional(),
   startsWith: z.string().max(40).optional(),
   after: z.string().max(60).optional(),
+  page: z.coerce.number().int().min(1).max(500).optional(),
   /**
    * Optional rather than `.default(20)`, for the reason `libraryQuerySchema`
    * gives: `withApi`'s query schema is a `ZodType<TQuery>`, and a default makes
@@ -29,3 +30,10 @@ export const wordFamilyQuerySchema = z.object({
 });
 
 export type WordFamilyQuery = z.infer<typeof wordFamilyQuerySchema>;
+
+/** The URL topic, or null when it is not one of the corpus's closed list. */
+export function parseWordFamilyTopic(value: string): WordFamilyTopic | null {
+  const parsed = z.enum(WORD_FAMILY_TOPICS).safeParse(value);
+
+  return parsed.success ? parsed.data : null;
+}

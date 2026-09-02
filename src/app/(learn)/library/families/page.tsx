@@ -1,5 +1,5 @@
 import { type ReactElement } from 'react';
-import { readWordFamilies } from '@/composition/reads';
+import { readAudioPreferences, readWordFamilies } from '@/composition/reads';
 import { requireUser } from '@/lib/auth/current-user';
 import { FamilyExplorer } from './family-explorer';
 
@@ -23,9 +23,12 @@ export const dynamic = 'force-dynamic';
 const PAGE_SIZE = 12;
 
 export default async function WordFamiliesPage(): Promise<ReactElement> {
-  await requireUser();
+  const user = await requireUser();
 
-  const page = await readWordFamilies(PAGE_SIZE);
+  const [page, audio] = await Promise.all([
+    readWordFamilies(PAGE_SIZE),
+    readAudioPreferences(user.userId),
+  ]);
 
   return (
     <>
@@ -53,7 +56,7 @@ export default async function WordFamiliesPage(): Promise<ReactElement> {
       </header>
 
       <section className="col-span-12">
-        <FamilyExplorer initialPage={page} />
+        <FamilyExplorer initialAccent={audio.accent} initialPage={page} />
       </section>
     </>
   );

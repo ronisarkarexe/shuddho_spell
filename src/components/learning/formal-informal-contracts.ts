@@ -37,3 +37,6 @@ export type FormalInformalPage = z.infer<typeof formalInformalPageSchema>;
 export type FormalInformalProgress = z.infer<typeof formalInformalProgressSchema>;
 
 export const FORMAL_INFORMAL_PAGE_SIZE = 20;
+
+/** Twenty-five pairs on a topic page, matching Saifur's. */
+export const FORMAL_INFORMAL_TOPIC_PAGE_SIZE = 25;

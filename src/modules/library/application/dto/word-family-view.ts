@@ -58,6 +58,10 @@ export interface IWordFamilyPage {
   readonly families: readonly IWordFamilyView[];
   /** The root to pass as `after` for the next page, or null at the end. */
   readonly nextCursor: string | null;
+  /** 1-based. Out of range is clamped, never an error. */
+  readonly page: number;
+  readonly totalPages: number;
+  readonly pageSize: number;
   /** How many families the filters matched, before paging. */
   readonly matchedFamilies: number;
   /** How many distinct words those families hold. */

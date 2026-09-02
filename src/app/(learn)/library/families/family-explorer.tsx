@@ -1,7 +1,15 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { Glyph } from '@/components/icons/glyph';
+import { LearnStepper } from '@/components/learning/learn-stepper';
+import {
+  StudyToggles,
+  studyLang,
+  type StudyAccent,
+  type StudyMode,
+} from '@/components/learning/study-toggles';
 import { apiFetch } from '@/lib/api/client';
 import { useSpeech } from '@/lib/audio/use-speech';
 import { SENTENCE_RATE } from '@/lib/audio/voices';
@@ -18,10 +26,12 @@ import {
 
 export interface IFamilyExplorerProps {
   readonly initialPage: WordFamilyPage;
+  readonly initialAccent?: StudyAccent;
+  readonly lockedTopic?: string;
+  readonly pageSize?: number;
 }
 
 const PAGE_SIZE = 12;
-const LANG = 'en-GB';
 
 interface IFilters {
   readonly skill: Skill | '';
@@ -29,8 +39,6 @@ interface IFilters {
   readonly rule: string;
   readonly startsWith: string;
 }
-
-const NO_FILTERS: IFilters = { skill: '', topic: '', rule: '', startsWith: '' };
 
 /**
  * The word-family reference: filter, page, and one card per root.
@@ -45,13 +53,28 @@ const NO_FILTERS: IFilters = { skill: '', topic: '', rule: '', startsWith: '' };
  * filtered set `educate` may not be in, and the honest answer to that is the
  * first page — but the learner would read it as the filter having done nothing.
  */
-export function FamilyExplorer({ initialPage }: IFamilyExplorerProps): ReactElement {
+export function FamilyExplorer({
+  initialPage,
+  initialAccent = 'british',
+  lockedTopic,
+  pageSize = PAGE_SIZE,
+}: IFamilyExplorerProps): ReactElement {
+  const idleFilters: IFilters = {
+    skill: '',
+    topic: lockedTopic ?? '',
+    rule: '',
+    startsWith: '',
+  };
   const [page, setPage] = useState<WordFamilyPage>(initialPage);
   const [cursor, setCursor] = useState<string | null>(null);
-  const [filters, setFilters] = useState<IFilters>(NO_FILTERS);
+  const [filters, setFilters] = useState<IFilters>(idleFilters);
   const [typed, setTyped] = useState('');
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [mode, setMode] = useState<StudyMode>('read');
+  const [accent, setAccent] = useState<StudyAccent>(initialAccent);
+  const [learnIndex, setLearnIndex] = useState(0);
+  const [revealed, setRevealed] = useState(false);
 
   /**
    * The search box is debounced, the other filters are not.
@@ -71,7 +94,13 @@ export function FamilyExplorer({ initialPage }: IFamilyExplorerProps): ReactElem
 
   useEffect(() => {
     // The unfiltered first page is already in state from the server render.
-    if (cursor === null && filters === NO_FILTERS) {
+    const idle =
+      filters.skill === '' &&
+      filters.topic === (lockedTopic ?? '') &&
+      filters.rule === '' &&
+      filters.startsWith === '';
+
+    if (cursor === null && idle) {
       return;
     }
 
@@ -82,7 +111,7 @@ export function FamilyExplorer({ initialPage }: IFamilyExplorerProps): ReactElem
     void apiFetch('/api/v1/library/families', {
       schema: wordFamilyPageSchema,
       query: {
-        pageSize: PAGE_SIZE,
+        pageSize,
         after: cursor ?? undefined,
         skill: filters.skill === '' ? undefined : filters.skill,
         topic: filters.topic === '' ? undefined : filters.topic,
@@ -90,24 +119,48 @@ export function FamilyExplorer({ initialPage }: IFamilyExplorerProps): ReactElem
         startsWith: filters.startsWith === '' ? undefined : filters.startsWith,
       },
     })
-      .then((next) => { if (live) { setPage(next); } })
+      .then((next) => {
+        if (live) {
+          setPage(next);
+          setLearnIndex(0);
+          setRevealed(false);
+        }
+      })
       .catch(() => { if (live) { setFailed(true); } })
       .finally(() => { if (live) { setLoading(false); } });
 
     return () => { live = false; };
-  }, [cursor, filters]);
+  }, [cursor, filters, lockedTopic, pageSize]);
 
   const set = (patch: Partial<IFilters>): void => {
     setFilters((current) => ({ ...current, ...patch }));
     setCursor(null);
   };
 
-  const filtered = filters !== NO_FILTERS;
+  const filtered =
+    filters.skill !== '' ||
+    filters.topic !== (lockedTopic ?? '') ||
+    filters.rule !== '' ||
+    filters.startsWith !== '';
+
+  const current = page.families[learnIndex] ?? page.families[0] ?? null;
 
   return (
     <div className="flex flex-col gap-5">
+      <StudyToggles
+        accent={accent}
+        mode={mode}
+        onAccent={setAccent}
+        onMode={(next) => {
+          setMode(next);
+          setRevealed(false);
+          setLearnIndex(0);
+        }}
+      />
+
       <Filters
         filters={filters}
+        hideTopic={lockedTopic !== undefined}
         typed={typed}
         topics={page.topics}
         rules={page.rules}
@@ -115,7 +168,12 @@ export function FamilyExplorer({ initialPage }: IFamilyExplorerProps): ReactElem
         onSet={set}
         onClear={() => {
           setTyped('');
-          setFilters(NO_FILTERS);
+          setFilters({
+            skill: '',
+            topic: lockedTopic ?? '',
+            rule: '',
+            startsWith: '',
+          });
           setCursor(null);
         }}
       />
@@ -141,11 +199,36 @@ export function FamilyExplorer({ initialPage }: IFamilyExplorerProps): ReactElem
         </p>
       ) : null}
 
-      <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {page.families.map((family) => (
-          <FamilyCard key={family.root} family={family} />
-        ))}
-      </ul>
+      {mode === 'read' && (
+        <ul className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {page.families.map((family) => (
+            <li key={family.root}>
+              <FamilyCard accent={accent} family={family} />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {mode === 'learn' && current !== null && (
+        <LearnFamilyCard
+          accent={accent}
+          family={current}
+          index={learnIndex}
+          onNext={() => {
+            setLearnIndex((currentIndex) => Math.min(page.families.length - 1, currentIndex + 1));
+            setRevealed(false);
+          }}
+          onPrevious={() => {
+            setLearnIndex((currentIndex) => Math.max(0, currentIndex - 1));
+            setRevealed(false);
+          }}
+          onReveal={() => {
+            setRevealed(true);
+          }}
+          revealed={revealed}
+          total={page.families.length}
+        />
+      )}
 
       <Pager
         hasPrevious={cursor !== null}
@@ -164,6 +247,7 @@ interface IFiltersProps {
   readonly typed: string;
   readonly topics: WordFamilyPage['topics'];
   readonly rules: WordFamilyPage['rules'];
+  readonly hideTopic: boolean;
   readonly onTyped: (value: string) => void;
   readonly onSet: (patch: Partial<IFilters>) => void;
   readonly onClear: () => void;
@@ -174,6 +258,7 @@ function Filters({
   typed,
   topics,
   rules,
+  hideTopic,
   onTyped,
   onSet,
   onClear,
@@ -196,19 +281,19 @@ function Filters({
           />
         </label>
 
-        <select
-          value={filters.topic}
-          onChange={(event) => { onSet({ topic: event.target.value }); }}
-          className="rounded-lg border border-neutral-300 px-3 py-2 text-sm"
-          aria-label="Topic"
-        >
-          <option value="">Every topic</option>
-          {topics.map((topic) => (
-            <option key={topic.topic} value={topic.topic}>
-              {topic.topic} ({topic.words})
-            </option>
-          ))}
-        </select>
+        {!hideTopic && (
+          <div className="flex w-full flex-wrap gap-1" role="navigation" aria-label="Topics">
+            {topics.map((topic) => (
+              <Link
+                className="min-h-8 rounded-chip border border-neutral-300 px-3 py-1 capitalize text-muted hover:text-primary-900"
+                href={`/library/families/${topic.topic}`}
+                key={topic.topic}
+              >
+                {topic.topic} <span className="num text-[11px]">{topic.words}</span>
+              </Link>
+            ))}
+          </div>
+        )}
 
         <button
           type="button"
@@ -259,7 +344,13 @@ function Filters({
   );
 }
 
-function FamilyCard({ family }: { readonly family: WordFamilyView }): ReactElement {
+function FamilyCard({
+  family,
+  accent,
+}: {
+  readonly family: WordFamilyView;
+  readonly accent: StudyAccent;
+}): ReactElement {
   const { supported, say } = useSpeech();
   const wordCount = family.members.length + 1;
 
@@ -275,7 +366,7 @@ function FamilyCard({ family }: { readonly family: WordFamilyView }): ReactEleme
   }, [family.members]);
 
   return (
-    <li className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface p-4">
+    <article className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-baseline gap-2">
@@ -283,7 +374,7 @@ function FamilyCard({ family }: { readonly family: WordFamilyView }): ReactEleme
             {supported ? (
               <button
                 type="button"
-                onClick={() => { say(family.root, SENTENCE_RATE, LANG); }}
+                onClick={() => { say(family.root, SENTENCE_RATE, studyLang(accent)); }}
                 aria-label={`Hear ${family.root}`}
                 className="text-muted hover:text-primary-900"
               >
@@ -325,7 +416,13 @@ function FamilyCard({ family }: { readonly family: WordFamilyView }): ReactEleme
             <p className="text-xs uppercase tracking-wide text-muted">{group.pos}</p>
             <ul className="mt-1 flex flex-col gap-1">
               {group.members.map((member) => (
-                <MemberRow key={member.text} member={member} onSay={say} speakable={supported} />
+              <MemberRow
+                accent={accent}
+                key={member.text}
+                member={member}
+                onSay={say}
+                speakable={supported}
+              />
               ))}
             </ul>
           </div>
@@ -337,13 +434,81 @@ function FamilyCard({ family }: { readonly family: WordFamilyView }): ReactEleme
           {family.inCourseCount} of these are taught in the 28-day course.
         </p>
       ) : null}
-    </li>
+    </article>
+  );
+}
+
+function LearnFamilyCard({
+  family,
+  accent,
+  index,
+  total,
+  revealed,
+  onReveal,
+  onNext,
+  onPrevious,
+}: {
+  readonly family: WordFamilyView;
+  readonly accent: StudyAccent;
+  readonly index: number;
+  readonly total: number;
+  readonly revealed: boolean;
+  readonly onReveal: () => void;
+  readonly onNext: () => void;
+  readonly onPrevious: () => void;
+}): ReactElement {
+  const { supported, say } = useSpeech();
+
+  return (
+    <div className="flex flex-col gap-4 rounded-card border border-hairline bg-surface p-4 sm:p-6">
+      <p className="num text-muted">
+        {String(index + 1)} of {String(total)} on this page
+        <span className="ml-2 font-bengali" lang="bn">
+          এই পাতায়
+        </span>
+      </p>
+      {revealed ? (
+        <FamilyCard accent={accent} family={family} />
+      ) : (
+        <>
+          <div className="flex flex-col items-start gap-2">
+            <p className="font-display text-3xl tracking-tight text-primary-900 sm:text-4xl">
+              {family.root}
+            </p>
+            {supported ? (
+              <button
+                aria-label={`Hear ${family.root}`}
+                className="text-muted hover:text-primary-900"
+                onClick={() => {
+                  say(family.root, SENTENCE_RATE, studyLang(accent));
+                }}
+                type="button"
+              >
+                <Glyph name="play" />
+              </button>
+            ) : null}
+          </div>
+          <button
+            className="min-h-12 rounded-control bg-primary-900 px-4 text-surface"
+            onClick={onReveal}
+            type="button"
+          >
+            Show meaning
+            <span className="ml-2 font-bengali" lang="bn">
+              অর্থ দেখুন
+            </span>
+          </button>
+        </>
+      )}
+      <LearnStepper index={index} onNext={onNext} onPrevious={onPrevious} total={total} />
+    </div>
   );
 }
 
 interface IMemberRowProps {
   readonly member: FamilyMember;
   readonly speakable: boolean;
+  readonly accent: StudyAccent;
   readonly onSay: (text: string, rate: number, lang: string) => void;
 }
 
@@ -355,7 +520,7 @@ interface IMemberRowProps {
  * of information the learner will need for `unmotivated`, `undamaged` and
  * `uneducated` alike.
  */
-function MemberRow({ member, speakable, onSay }: IMemberRowProps): ReactElement {
+function MemberRow({ member, speakable, onSay, accent }: IMemberRowProps): ReactElement {
   return (
     <li className="flex items-baseline justify-between gap-2 text-sm">
       <span className="flex items-baseline gap-1.5">
@@ -363,7 +528,7 @@ function MemberRow({ member, speakable, onSay }: IMemberRowProps): ReactElement 
         {speakable ? (
           <button
             type="button"
-            onClick={() => { onSay(member.text, SENTENCE_RATE, LANG); }}
+            onClick={() => { onSay(member.text, SENTENCE_RATE, studyLang(accent)); }}
             aria-label={`Hear ${member.text}`}
             className="text-neutral-300 hover:text-primary-900"
           >
