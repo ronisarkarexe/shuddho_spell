@@ -100,10 +100,12 @@ function topicChildren(
  *
  * `/library/families`, `/library/vocabulary`, `/library/saifurs`,
  * `/library/formal-informal`,
- * `/library/verbs`, `/library/prepositions`, `/library/questions` and
+ * `/library/verbs`, `/library/verb-roadmap`, `/library/prepositions`,
+ * `/library/questions` and
  * `/library/patterns` sit
  * directly under `/library` because they are the same shelf: all of them are
- * reference rather than course. Each named list that is filed by topic — word
+ * reference rather than course. The roadmap is the system; the verb table is
+ * the thousand rows that sit inside it. Each named list that is filed by topic — word
  * families, IELTS vocabulary, informal/formal — then opens a child item per
  * topic, so a learner who wants *conflict* or *education* can go there without
  * first opening the mixed shelf. `activeHref` matches the longest prefix, so
@@ -152,6 +154,7 @@ export const NAV_ITEMS: readonly INavItem[] = Object.freeze([
     ),
   },
   { href: '/library/verbs', labelKey: 'verbs', glyph: 'grammar' },
+  { href: '/library/verb-roadmap', labelKey: 'verbRoadmap', glyph: 'grammar' },
   { href: '/library/prepositions', labelKey: 'prepositions', glyph: 'grammar' },
   { href: '/library/questions', labelKey: 'questionWords', glyph: 'grammar' },
   { href: '/library/patterns', labelKey: 'gapFill', glyph: 'grammar' },

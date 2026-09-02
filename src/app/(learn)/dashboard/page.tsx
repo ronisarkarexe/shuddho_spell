@@ -3,6 +3,7 @@ import { type ReactElement } from 'react';
 import { MasteryMatrix, type IMasteryMatrixCell } from '@/components/data/mastery-matrix';
 import { GrammarPatternDrill } from '@/components/learning/grammar-pattern-drill';
 import { VerbDrill } from '@/components/learning/verb-drill';
+import { VerbRoadmapDrill } from '@/components/learning/verb-roadmap-drill';
 import { VocabularyDrill } from '@/components/learning/vocabulary-drill';
 import { PushPermissionBanner } from '@/components/notifications/push-permission-banner';
 import { HeatCell } from '@/components/primitives/heat-cell';
@@ -150,12 +151,20 @@ export default async function DashboardPage(): Promise<ReactElement> {
       <section className="card col-span-12 grid grid-cols-2 gap-6 p-4 md:grid-cols-4">
         <StatCell
           label="Day"
-          note={dashboard.hasFinishedProgram ? 'Programme complete' : `${String(summary.completedDays)} finished`}
+          note={
+            dashboard.hasFinishedProgram
+              ? 'Programme complete'
+              : `${String(summary.completedDays)} finished`
+          }
           value={dashboard.currentDayIndex}
         />
         <StatCell
           label="Current streak"
-          note={dashboard.streakIsAlive ? `Best ${String(summary.longestStreak)}` : 'Broken — start it again today'}
+          note={
+            dashboard.streakIsAlive
+              ? `Best ${String(summary.longestStreak)}`
+              : 'Broken — start it again today'
+          }
           unit="days"
           value={dashboard.streakIsAlive ? summary.currentStreak : 0}
         />
@@ -279,11 +288,7 @@ export default async function DashboardPage(): Promise<ReactElement> {
           title="Words today"
         />
         <div className="p-4">
-          <PractisedWords
-            course={practised.course}
-            date={practised.date}
-            demo={practised.demo}
-          />
+          <PractisedWords course={practised.course} date={practised.date} demo={practised.demo} />
         </div>
       </section>
 
@@ -382,6 +387,29 @@ export default async function DashboardPage(): Promise<ReactElement> {
         />
         <div className="p-4">
           <VerbDrill coreOnly initial={verbs} roundSize={VERB_QUESTIONS} tone="light" />
+        </div>
+      </section>
+
+      {/*
+        The complete verb system, as four questions.
+
+        Beside the V1–V5 drill because they are the two halves of the same
+        thirty seconds: one asks whether the *form* is known, this asks whether
+        the *tense* that form sits in is. Four questions, not six, for the
+        same reason as the gap-fill card.
+      */}
+      <section className="card col-span-12 lg:col-span-7">
+        <PanelHeader
+          action={
+            <Link className="text-[11px] text-primary-900" href="/library/verb-roadmap">
+              The chart
+            </Link>
+          }
+          note="Twelve tenses"
+          title="Verb complete roadmap"
+        />
+        <div className="p-4">
+          <VerbRoadmapDrill roundSize={4} tone="light" />
         </div>
       </section>
 
