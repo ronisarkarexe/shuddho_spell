@@ -33,4 +33,14 @@ export class DatabaseError extends Error {
   is(code: PgCode): boolean {
     return this.code === code;
   }
+
+  /**
+   * The table is not there yet — a migration that has not been applied, or
+   * PostgREST's schema cache still pointing at yesterday. Callers that can
+   * answer without the row (a bookmark, a counter) should treat this as
+   * "no row" rather than taking the screen down with them.
+   */
+  isMissingRelation(): boolean {
+    return this.code === 'PGRST205' || this.code === 'PGRST204' || this.code === '42P01';
+  }
 }

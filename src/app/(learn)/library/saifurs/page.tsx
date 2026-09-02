@@ -17,15 +17,16 @@ export const dynamic = 'force-dynamic';
 export default async function SaifursVocabularyPage(): Promise<ReactElement> {
   const user = await requireUser();
 
-  const [progress, audio] = await Promise.all([
-    readSaifursProgress(user.userId),
+  const [audio, opening] = await Promise.all([
     readAudioPreferences(user.userId),
+    readSaifursVocabulary(SAIFURS_PAGE_SIZE, 1),
   ]);
 
-  const page = await readSaifursVocabulary(
-    SAIFURS_PAGE_SIZE,
-    progress.wordsRead > 0 ? progress.lastPage : 1,
-  );
+  const progress = await readSaifursProgress(user.userId);
+  const page =
+    progress.wordsRead > 0
+      ? await readSaifursVocabulary(SAIFURS_PAGE_SIZE, progress.lastPage)
+      : opening;
 
   return (
     <>

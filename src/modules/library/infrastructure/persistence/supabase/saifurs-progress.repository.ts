@@ -1,4 +1,5 @@
 import { type IDatabase } from '@/modules/shared/infrastructure/persistence/database';
+import { DatabaseError } from '@/modules/shared/infrastructure/persistence/database-error';
 import { type SaifursProgress } from '../../../domain/entities/saifurs-progress';
 import { type ISaifursProgressRepository } from '../../../domain/repositories/saifurs-progress-repository';
 import {
@@ -13,13 +14,28 @@ export class SupabaseSaifursProgressRepository implements ISaifursProgressReposi
   constructor(private readonly db: IDatabase) {}
 
   async findByProfile(profileId: string): Promise<SaifursProgress | null> {
-    return toSaifursProgress(
-      await this.db.selectOne({
-        table: TABLE,
-        columns: SAIFURS_PROGRESS_COLUMNS,
-        eq: { profile_id: profileId },
-      }),
-    );
+    try {
+      return toSaifursProgress(
+        await this.db.selectOne({
+          table: TABLE,
+          columns: SAIFURS_PROGRESS_COLUMNS,
+          eq: { profile_id: profileId },
+        }),
+      );
+    } catch (error: unknown) {
+      const missing =
+        (error instanceof DatabaseError && error.isMissingRelation()) ||
+        (error instanceof Error &&
+          error.name === 'DatabaseError' &&
+          'code' in error &&
+          (error.code === 'PGRST205' || error.code === 'PGRST204' || error.code === '42P01'));
+
+      if (missing) {
+        return null;
+      }
+
+      throw error;
+    }
   }
 
   async upsert(progress: SaifursProgress): Promise<void> {

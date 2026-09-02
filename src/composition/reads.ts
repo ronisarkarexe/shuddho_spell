@@ -37,6 +37,7 @@ import { type IPracticeQueue } from '@/modules/review/application/dto/practice-q
 import { type IWeakSpots } from '@/modules/review/application/dto/weak-spots';
 import { DatabaseMetricsReader } from '@/modules/shared/infrastructure/adapters/database-metrics-reader';
 import { type IMetricsSnapshot } from '@/modules/shared/application/ports/metrics-reader';
+import { DatabaseError } from '@/modules/shared/infrastructure/persistence/database-error';
 import { createContainer } from './container';
 import { grammarLesson, grammarSyllabus } from './grammar';
 import {
@@ -277,9 +278,36 @@ export const readSaifursVocabulary = cache(
     makeGetSaifursVocabulary(createContainer(crypto.randomUUID())).execute({ pageSize, page }),
 );
 
+/**
+ * The bookmark. The word list itself is a compiled module and does not need
+ * this row; a missing table (migration 024 not applied, or PostgREST still
+ * caching yesterday's schema) must not take the page down with it.
+ */
 export const readSaifursProgress = cache(
-  async (userId: string): Promise<ISaifursProgressView> =>
-    makeGetSaifursProgress(createContainer(crypto.randomUUID())).execute({ userId }),
+  async (userId: string): Promise<ISaifursProgressView> => {
+    const container = createContainer(crypto.randomUUID());
+
+    try {
+      return await makeGetSaifursProgress(container).execute({ userId });
+    } catch (error: unknown) {
+      // `instanceof` can fail across Next's duplicated module copies; the name
+      // is set on the class and is the fallback that still recognises the throw.
+      const databaseFailure =
+        error instanceof DatabaseError ||
+        (error instanceof Error && error.name === 'DatabaseError');
+
+      if (databaseFailure) {
+        return {
+          lastPage: 1,
+          lastSerial: 0,
+          wordsRead: 0,
+          totalEntries: container.saifurs.listAll().length,
+        };
+      }
+
+      throw error;
+    }
+  },
 );
 
 /**
