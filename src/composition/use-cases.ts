@@ -65,6 +65,7 @@ import { GetExtraVocabProgressUseCase } from '@/modules/library/application/use-
 import { SaveExtraVocabProgressUseCase } from '@/modules/library/application/use-cases/save-extra-vocab-progress';
 import { SaveExtraVocabMarkUseCase } from '@/modules/library/application/use-cases/save-extra-vocab-mark';
 import { GetAdjVerbAdvUseCase } from '@/modules/library/application/use-cases/get-adj-verb-adv';
+import { GetIeltsSaifursUseCase } from '@/modules/library/application/use-cases/get-ielts-saifurs';
 import { GetWordFamiliesUseCase } from '@/modules/library/application/use-cases/get-word-families';
 import { ScoreDemoSpeechUseCase } from '@/modules/library/application/use-cases/score-demo-speech';
 import { GetLibraryPageUseCase } from '@/modules/library/application/use-cases/get-library-page';
@@ -645,6 +646,10 @@ export function makeSaveExtraVocabMark(c: IContainer): SaveExtraVocabMarkUseCase
 
 export function makeGetAdjVerbAdv(c: IContainer): GetAdjVerbAdvUseCase {
   return new GetAdjVerbAdvUseCase(c.adjVerbAdv);
+}
+
+export function makeGetIeltsSaifurs(c: IContainer): GetIeltsSaifursUseCase {
+  return new GetIeltsSaifursUseCase(c.ieltsSaifurs);
 }
 
 /**

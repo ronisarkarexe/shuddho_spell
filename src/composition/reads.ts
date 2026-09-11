@@ -26,6 +26,7 @@ import {
   type IExtraVocabProgressView,
 } from '@/modules/library/application/dto/extra-vocab-view';
 import { type IAdjVerbAdvPage } from '@/modules/library/application/dto/adj-verb-adv-view';
+import { type IIeltsSaifursPage } from '@/modules/library/application/dto/ielts-saifurs-view';
 import { type IWordFamilyPage } from '@/modules/library/application/dto/word-family-view';
 import { type IWordPhonemeStrip } from '@/modules/library/application/dto/phoneme-strip';
 import { type IProgramDayDetail } from '@/modules/program/application/dto/program-day-detail';
@@ -76,6 +77,7 @@ import {
   makeGetExtraVocab,
   makeGetExtraVocabProgress,
   makeGetAdjVerbAdv,
+  makeGetIeltsSaifurs,
   makeGetWordFamilies,
   makeGetPhonemeStrips,
   makeGetPracticeQueue,
@@ -362,6 +364,14 @@ export const readExtraVocabProgress = cache(
 export const readAdjVerbAdv = cache(
   async (pageSize: number, page = 1): Promise<IAdjVerbAdvPage> =>
     makeGetAdjVerbAdv(createContainer(crypto.randomUUID())).execute({
+      pageSize,
+      page,
+    }),
+);
+
+export const readIeltsSaifurs = cache(
+  async (pageSize: number, page = 1): Promise<IIeltsSaifursPage> =>
+    makeGetIeltsSaifurs(createContainer(crypto.randomUUID())).execute({
       pageSize,
       page,
     }),
