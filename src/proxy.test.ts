@@ -80,7 +80,17 @@ describe('route protection', () => {
   });
 
   it('leaves the public pages open to nobody in particular', async () => {
-    for (const path of ['/', '/login', '/pricing', '/faq', '/auth/callback', '/auth/signin', '/auth/signout']) {
+    for (const path of [
+      '/',
+      '/login',
+      '/pricing',
+      '/faq',
+      '/education',
+      '/education/us/university-of-north-texas',
+      '/auth/callback',
+      '/auth/signin',
+      '/auth/signout',
+    ]) {
       const response = await proxy(get(path));
 
       expect(response.headers.get('location'), `${path} was not public`).toBeNull();
@@ -96,6 +106,7 @@ describe('route protection', () => {
   it('does not treat a path that merely starts with a public one as public', () => {
     expect(isPublicPage('/loginish')).toBe(false);
     expect(isPublicPage('/pricing/secret')).toBe(false);
+    expect(isPublicPage('/educationish')).toBe(false);
   });
 });
 

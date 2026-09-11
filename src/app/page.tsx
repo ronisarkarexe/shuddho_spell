@@ -8,6 +8,7 @@ import {
 import { VerbDrill } from '@/components/learning/verb-drill';
 import { FormKey, TenseChart } from '@/components/learning/verb-guide';
 import { VocabularyDrill } from '@/components/learning/vocabulary-drill';
+import { SiteFooter } from '@/components/shell/site-footer';
 import { readDictationDemoWord, readVerbDrill, readVocabularyDrill } from '@/composition/reads';
 import { AlphabetFamilies } from './alphabet-families';
 import { SignatureFlow } from './signature-flow';
@@ -515,20 +516,7 @@ export default async function LandingPage(): Promise<ReactElement> {
         </dl>
       </Section>
 
-      <footer className="border-t border-hairline py-10">
-        <div className="mx-auto flex max-w-content flex-wrap items-center gap-x-6 gap-y-2 px-5 text-muted sm:px-6">
-          <span className="font-display text-primary-900">ShuddhoSpell</span>
-          <Link className="hover:text-primary-900" href="/login">
-            Sign in
-          </Link>
-          <Link className="hover:text-primary-900" href="/verify/XXXX-XXXX-XXXX">
-            Verify a certificate
-          </Link>
-          <span className="ml-auto num text-[11px]">
-            Standard British reference accent · Bangla in Bangla script
-          </span>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
