@@ -31,6 +31,19 @@ export const GLYPHS = Object.freeze([
   'mic',
   'sign-out',
   'grammar',
+  'families',
+  'cards',
+  'bookmark',
+  'globe',
+  'extra',
+  'columns',
+  'swap',
+  'verb',
+  'roadmap',
+  'around',
+  'question',
+  'gap',
+  'shield',
 ] as const);
 
 export type GlyphName = (typeof GLYPHS)[number];
@@ -63,6 +76,19 @@ const PATHS: Readonly<Record<GlyphName, string>> = {
   // are the two it could otherwise be confused with in the rail.
   grammar: 'M4 6h16M4 10.5h11M4 15h16M4 19.5h7M17.5 18.5l1.8 1.8 3.2-3.6',
   mic: 'M12 3.5a2.75 2.75 0 0 1 2.75 2.75v5.5a2.75 2.75 0 0 1-5.5 0v-5.5A2.75 2.75 0 0 1 12 3.5zM5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3',
+  families: 'M12 4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM6.5 17.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17.5 17.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM12 8.5v4.5M12 13l-4 4.5M12 13l4 4.5',
+  cards: 'M5 8h10v12H5zM9 4h10v12',
+  bookmark: 'M7 4h10v16l-5-3.2L7 20z',
+  globe: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zM3.5 12h17M12 3.5c2.6 3 2.6 14 0 17M12 3.5c-2.6 3-2.6 14 0 17',
+  extra: 'M5 5h8v14H5zM15.5 10.5h5M18 8v5',
+  columns: 'M4 7h4v12H4zM10 4h4v15h-4zM16 9h4v10h-4z',
+  swap: 'M7 8h10M14.5 5.5 17.5 8.5 14.5 11.5M17 16H7M9.5 13.5 6.5 16.5 9.5 19.5',
+  verb: 'M5 4v16M5 5h11l-3 4.5L16 14H5',
+  roadmap: 'M5 18h4M9 18c0-5 6-5 6-11M15 7h4M6.2 18a1.2 1.2 0 1 0 0-.01M12 12.5a1.2 1.2 0 1 0 0-.01M17.8 7a1.2 1.2 0 1 0 0-.01',
+  around: 'M8.5 8.5h7v7h-7zM12 3.5v3.2M12 17.3v3.2M3.5 12h3.2M17.3 12h3.2',
+  question: 'M9 8.2a3 3 0 1 1 3.4 3c-.9.4-1.4 1-1.4 2.1M12 16.8v.7M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17z',
+  gap: 'M4 7h16M4 17h16M4 12h6M14 12h6M10 13.5h4',
+  shield: 'M12 3.5 19.5 7v5.2c0 4.3-3.1 6.7-7.5 8.3-4.4-1.6-7.5-4-7.5-8.3V7z',
 };
 
 interface IGlyphProps {
