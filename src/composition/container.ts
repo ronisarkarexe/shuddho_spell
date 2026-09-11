@@ -40,7 +40,6 @@ import { type IFormalInformalSource } from '@/modules/library/domain/repositorie
 import { type IFormalInformalProgressRepository } from '@/modules/library/domain/repositories/formal-informal-progress-repository';
 import { type ISaifursSource } from '@/modules/library/domain/repositories/saifurs-source';
 import { type ISaifursProgressRepository } from '@/modules/library/domain/repositories/saifurs-progress-repository';
-import { type ISaifursMarkRepository } from '@/modules/library/domain/repositories/saifurs-mark-repository';
 import { type IVerbSource } from '@/modules/library/domain/repositories/verb-source';
 import { type ICourseWordIndex } from '@/modules/library/domain/repositories/course-word-index';
 import { type ISentenceItemRepository } from '@/modules/library/domain/repositories/sentence-item-repository';
@@ -56,7 +55,6 @@ import { FormalInformalContentSource } from '@/modules/library/infrastructure/pe
 import { SupabaseFormalInformalProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/formal-informal-progress.repository';
 import { SaifursContentSource } from '@/modules/library/infrastructure/persistence/content/saifurs.source';
 import { SupabaseSaifursProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/saifurs-progress.repository';
-import { SupabaseSaifursMarkRepository } from '@/modules/library/infrastructure/persistence/supabase/saifurs-mark.repository';
 import { VerbContentSource } from '@/modules/library/infrastructure/persistence/content/verb.source';
 import { ContentCourseWordIndex } from '@/modules/library/infrastructure/persistence/content/course-word.index';
 import { SupabaseSentenceItemRepository } from '@/modules/library/infrastructure/persistence/supabase/sentence-item.repository';
@@ -148,12 +146,6 @@ export interface IContainer {
    * from a page number — the serial is computed, never posted.
    */
   readonly saifursProgress: ISaifursProgressRepository;
-  /**
-   * Which of those cards this learner is studying. One row per profile per
-   * headword — Learning or Known — so the twenty-five they chose follow them
-   * across devices.
-   */
-  readonly saifursMarks: ISaifursMarkRepository;
   /**
    * The thousand verbs in all five forms. Content again, and the fourth corpus
    * — the only one whose forms are mostly *derived* rather than stored, which
@@ -293,7 +285,6 @@ export function createContainer(requestId: string): IContainer {
     formalInformalProgress: new SupabaseFormalInformalProgressRepository(db),
     saifurs,
     saifursProgress: new SupabaseSaifursProgressRepository(db),
-    saifursMarks: new SupabaseSaifursMarkRepository(db),
     verbs,
     courseWords,
     ruleFamilies: new SupabaseRuleFamilyRepository(db),

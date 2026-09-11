@@ -60,7 +60,6 @@ import { SaveFormalInformalProgressUseCase } from '@/modules/library/application
 import { GetSaifursVocabularyUseCase } from '@/modules/library/application/use-cases/get-saifurs-vocabulary';
 import { GetSaifursProgressUseCase } from '@/modules/library/application/use-cases/get-saifurs-progress';
 import { SaveSaifursProgressUseCase } from '@/modules/library/application/use-cases/save-saifurs-progress';
-import { SaveSaifursMarkUseCase } from '@/modules/library/application/use-cases/save-saifurs-mark';
 import { GetWordFamiliesUseCase } from '@/modules/library/application/use-cases/get-word-families';
 import { ScoreDemoSpeechUseCase } from '@/modules/library/application/use-cases/score-demo-speech';
 import { GetLibraryPageUseCase } from '@/modules/library/application/use-cases/get-library-page';
@@ -608,7 +607,7 @@ export function makeSaveFormalInformalProgress(c: IContainer): SaveFormalInforma
 }
 
 export function makeGetSaifursVocabulary(c: IContainer): GetSaifursVocabularyUseCase {
-  return new GetSaifursVocabularyUseCase(c.saifurs, c.learnerProfiles, c.saifursMarks);
+  return new GetSaifursVocabularyUseCase(c.saifurs);
 }
 
 export function makeGetSaifursProgress(c: IContainer): GetSaifursProgressUseCase {
@@ -617,10 +616,6 @@ export function makeGetSaifursProgress(c: IContainer): GetSaifursProgressUseCase
 
 export function makeSaveSaifursProgress(c: IContainer): SaveSaifursProgressUseCase {
   return new SaveSaifursProgressUseCase(c.learnerProfiles, c.saifursProgress, c.saifurs);
-}
-
-export function makeSaveSaifursMark(c: IContainer): SaveSaifursMarkUseCase {
-  return new SaveSaifursMarkUseCase(c.learnerProfiles, c.saifursMarks, c.saifurs);
 }
 
 /**
