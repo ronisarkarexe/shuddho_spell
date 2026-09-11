@@ -39,6 +39,8 @@ import { DatabaseMetricsReader } from '@/modules/shared/infrastructure/adapters/
 import { type IMetricsSnapshot } from '@/modules/shared/application/ports/metrics-reader';
 import { DatabaseError } from '@/modules/shared/infrastructure/persistence/database-error';
 import { createContainer } from './container';
+import { type IEducationCatalogView, type IUniversityDetailView } from '@/modules/education/application/dto/education-catalog-view';
+import { educationCatalog, educationUniversity } from './education';
 import { grammarLesson, grammarSyllabus } from './grammar';
 import {
   makeGetDueReviewItems,
@@ -518,4 +520,15 @@ export const readGrammarSyllabus = cache(
 /** One day of the grammar course, or null when there is no such day. */
 export const readGrammarLesson = cache(
   async (dayIndex: number): Promise<IGrammarLessonView | null> => grammarLesson(dayIndex),
+);
+
+/** Study-abroad catalogue for one destination. Compiled-in; no database. */
+export const readEducationCatalog = cache(
+  async (country: string): Promise<IEducationCatalogView> => educationCatalog(country),
+);
+
+/** One university's admission tracks, or null when the slug is unknown. */
+export const readEducationUniversity = cache(
+  async (country: string, slug: string): Promise<IUniversityDetailView | null> =>
+    educationUniversity(country, slug),
 );

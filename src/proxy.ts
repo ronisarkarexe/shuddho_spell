@@ -9,10 +9,10 @@ import { createMiddlewareClient } from '@/lib/supabase/session-client';
  * added tomorrow is private until someone writes it down here, rather than
  * public until someone remembers to protect it.
  */
-const PUBLIC_PAGES: readonly string[] = ['/', '/login', '/pricing', '/faq'];
+const PUBLIC_PAGES: readonly string[] = ['/', '/login', '/pricing', '/faq', '/education'];
 
 /** `/auth/signin`, `/auth/callback` and anything else the sign-in flow needs. */
-const PUBLIC_PREFIXES: readonly string[] = ['/auth/'];
+const PUBLIC_PREFIXES: readonly string[] = ['/auth/', '/education/'];
 
 export function isPublicPage(pathname: string): boolean {
   return (

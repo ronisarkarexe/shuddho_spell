@@ -143,6 +143,7 @@ ShuddhoSpell/
                                      exams  exams/[code]
                                      exams/attempt/[id]  exams/result/[id]
                                      exams/review/[id]  certificate/[id]  onboarding
+      education/                     public study-abroad catalogue (D85)
       login/
       auth/callback/route.ts         OAuth code exchange
       api/
@@ -153,7 +154,8 @@ ShuddhoSpell/
       layout.tsx  globals.css
 
     modules/<feature>/               auth · program · lessons · review · exams ·
-                                     progress · library · notifications · certificates
+                                     progress · library · notifications · certificates ·
+                                     grammar · education
       domain/
         entities/                    pure TS classes with behaviour
         value-objects/               DayIndex, ScorePercent, IpaTranscription, Track, ErrorTag
@@ -267,6 +269,7 @@ Recorded as decisions in section 5. Same convention, same wiring.
 | `CERTIFICATE_REPOSITORY` | `ICertificateRepository` | certificates | 12 |
 | `SAIFURS_SOURCE` | `ISaifursSource` | library | 13 |
 | `SAIFURS_PROGRESS_REPOSITORY` | `ISaifursProgressRepository` | library | 13 |
+| `UNIVERSITY_CATALOG` | `IUniversityCatalog` | education | — |
 
 ### Application ports — `application/ports/`
 
@@ -1491,6 +1494,9 @@ Saifur's was one named list. The other three shelves are filed by topic — 12 I
 
 **D84 — the verb complete roadmap is a reference page of writing, not a corpus (user request, 2026-09-02).**
 The twelve tenses, the five forms, be / have / do, the passive, modals, gerunds, conditionals and the mistakes that cost marks are the same kind of object as the gap-fill chart and the preposition list: a closed page of writing a learner looks up by name. Putting it behind a port, a source, a use case and a DTO would be four files to reach the same tables, and `content/` is for corpora the build validates. The 998-verb list at `/library/verbs` stays the corpus; `/library/verb-roadmap` is the system those rows sit inside, on the same rail. The drill that sits on the dashboard and the chart itself is a shuffle over sixteen authored sentences inside the component; nothing is stored, and there is no endpoint, because a fresh round is not a new fact.
+
+**D85 — Education is a public catalogue, country-first, not a learner feature (user request, 2026-09-10).**
+A family researching US universities is not signed in, so `/education` sits outside every authenticated route group and is named in `proxy.ts` the way `/` is. The hundred universities are a compiled module behind `IUniversityCatalog`, wired like grammar: no cookies, no database, no request-scoped container. Destinations are a country list with `available: false` for the UK, Canada and Australia — the switcher is real before the files are, so a second country is another seed file rather than a redesigned page. Official names, cities, states and `.edu` sites are facts. GPA floors, English scores, tuition and living costs are typical published ranges, flagged `needsReview`, converted to taka at a documented snapshot rate — they are not a live admissions scrape, and the screen says so.
 
 ### Open — needs the user, not me
 
