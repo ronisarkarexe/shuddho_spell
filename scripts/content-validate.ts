@@ -12,6 +12,7 @@ import { validateFormalInformal } from '../content/formal-informal/index';
 import { validateSaifursVocabulary } from '../content/saifurs-vocabulary/index';
 import { validateExtraVocabulary } from '../content/extra-vocabulary/index';
 import { validateAdjVerbAdv } from '../content/adj-verb-adv/index';
+import { validateIeltsSaifursVocabulary } from '../content/ielts-saifurs-vocabulary/index';
 import { validateVerbs } from '../content/verb-forms/index';
 import {
   presentParticiple,
@@ -56,6 +57,7 @@ const formalInformal = validateFormalInformal();
 const saifurs = validateSaifursVocabulary();
 const extraVocab = validateExtraVocabulary();
 const adjVerbAdv = validateAdjVerbAdv();
+const ieltsSaifurs = validateIeltsSaifursVocabulary();
 
 /**
  * The verb corpus, checked against the rules that generate four of its five
@@ -78,6 +80,7 @@ for (const issue of [
   ...saifurs.issues,
   ...extraVocab.issues,
   ...adjVerbAdv.issues,
+  ...ieltsSaifurs.issues,
   ...verbs.issues,
 ]) {
   process.stdout.write(`${issue.file}  ${issue.path}\n    ${issue.message}\n`);
@@ -103,6 +106,7 @@ process.stdout.write(
     `  saifurs         ${String(saifurs.counts.entries)}`,
     `  extra-vocab     ${String(extraVocab.counts.entries)}`,
     `  adj-verb-adv    ${String(adjVerbAdv.counts.entries)}`,
+    `  ielts-saifurs   ${String(ieltsSaifurs.counts.entries)}`,
     `  verbs           ${String(verbs.counts.verbs)}`,
     `  irregular verbs ${String(verbs.counts.irregular)}`,
     `  verb overrides  ${String(verbs.counts.overrides)}`,
@@ -135,6 +139,7 @@ const total =
   saifurs.issues.length +
   extraVocab.issues.length +
   adjVerbAdv.issues.length +
+  ieltsSaifurs.issues.length +
   verbs.issues.length;
 
 if (total > 0) {

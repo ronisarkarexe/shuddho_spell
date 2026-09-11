@@ -44,6 +44,7 @@ import { type IExtraVocabSource } from '@/modules/library/domain/repositories/ex
 import { type IExtraVocabProgressRepository } from '@/modules/library/domain/repositories/extra-vocab-progress-repository';
 import { type IExtraVocabMarkRepository } from '@/modules/library/domain/repositories/extra-vocab-mark-repository';
 import { type IAdjVerbAdvSource } from '@/modules/library/domain/repositories/adj-verb-adv-source';
+import { type IIeltsSaifursSource } from '@/modules/library/domain/repositories/ielts-saifurs-source';
 import { type IVerbSource } from '@/modules/library/domain/repositories/verb-source';
 import { type ICourseWordIndex } from '@/modules/library/domain/repositories/course-word-index';
 import { type ISentenceItemRepository } from '@/modules/library/domain/repositories/sentence-item-repository';
@@ -63,6 +64,7 @@ import { ExtraVocabContentSource } from '@/modules/library/infrastructure/persis
 import { SupabaseExtraVocabProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/extra-vocab-progress.repository';
 import { SupabaseExtraVocabMarkRepository } from '@/modules/library/infrastructure/persistence/supabase/extra-vocab-mark.repository';
 import { AdjVerbAdvContentSource } from '@/modules/library/infrastructure/persistence/content/adj-verb-adv.source';
+import { IeltsSaifursContentSource } from '@/modules/library/infrastructure/persistence/content/ielts-saifurs.source';
 import { VerbContentSource } from '@/modules/library/infrastructure/persistence/content/verb.source';
 import { ContentCourseWordIndex } from '@/modules/library/infrastructure/persistence/content/course-word.index';
 import { SupabaseSentenceItemRepository } from '@/modules/library/infrastructure/persistence/supabase/sentence-item.repository';
@@ -166,6 +168,11 @@ export interface IContainer {
    * list from Extra vocabulary, Saifur's, and the verb-forms table.
    */
   readonly adjVerbAdv: IAdjVerbAdvSource;
+  /**
+   * IELTS Saifur's vocabulary — a separate corpus from the admission Saifur's
+   * list. Same study-card shape, different book.
+   */
+  readonly ieltsSaifurs: IIeltsSaifursSource;
   /**
    * The thousand verbs in all five forms. Content again, and the fourth corpus
    * — the only one whose forms are mostly *derived* rather than stored, which
@@ -278,6 +285,7 @@ export function createContainer(requestId: string): IContainer {
   const saifurs = new SaifursContentSource();
   const extraVocab = new ExtraVocabContentSource();
   const adjVerbAdv = new AdjVerbAdvContentSource();
+  const ieltsSaifurs = new IeltsSaifursContentSource();
   const verbs = new VerbContentSource();
   const courseWords = new ContentCourseWordIndex();
   const speechScorer = new ConfusionMapSpeechScorer();
@@ -311,6 +319,7 @@ export function createContainer(requestId: string): IContainer {
     extraVocabProgress: new SupabaseExtraVocabProgressRepository(db),
     extraVocabMarks: new SupabaseExtraVocabMarkRepository(db),
     adjVerbAdv,
+    ieltsSaifurs,
     verbs,
     courseWords,
     ruleFamilies: new SupabaseRuleFamilyRepository(db),

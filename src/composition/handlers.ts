@@ -42,6 +42,7 @@ import {
 } from '@/modules/library/presentation/handlers/extra-vocab-progress';
 import { createSaveExtraVocabMarkHandler } from '@/modules/library/presentation/handlers/extra-vocab-marks';
 import { createGetAdjVerbAdvHandler } from '@/modules/library/presentation/handlers/get-adj-verb-adv';
+import { createGetIeltsSaifursHandler } from '@/modules/library/presentation/handlers/get-ielts-saifurs';
 import { createGetWordFamiliesHandler } from '@/modules/library/presentation/handlers/get-word-families';
 import { createCompleteSessionHandler } from '@/modules/lessons/presentation/handlers/complete-session';
 import { createAdvanceStageHandler } from '@/modules/lessons/presentation/handlers/advance-stage';
@@ -88,6 +89,7 @@ import {
   makeSaveExtraVocabProgress,
   makeSaveExtraVocabMark,
   makeGetAdjVerbAdv,
+  makeGetIeltsSaifurs,
   makeGetWordFamilies,
   makeVerifyCertificate,
   makeGetMe,
@@ -363,6 +365,10 @@ export const saveExtraVocabMarkHandler = createSaveExtraVocabMarkHandler(() =>
 
 export const getAdjVerbAdvHandler = createGetAdjVerbAdvHandler(() =>
   makeGetAdjVerbAdv(container()),
+);
+
+export const getIeltsSaifursHandler = createGetIeltsSaifursHandler(() =>
+  makeGetIeltsSaifurs(container()),
 );
 
 /** The verb reference — the third of the three library screens. */
