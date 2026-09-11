@@ -64,6 +64,7 @@ import { GetExtraVocabUseCase } from '@/modules/library/application/use-cases/ge
 import { GetExtraVocabProgressUseCase } from '@/modules/library/application/use-cases/get-extra-vocab-progress';
 import { SaveExtraVocabProgressUseCase } from '@/modules/library/application/use-cases/save-extra-vocab-progress';
 import { SaveExtraVocabMarkUseCase } from '@/modules/library/application/use-cases/save-extra-vocab-mark';
+import { GetAdjVerbAdvUseCase } from '@/modules/library/application/use-cases/get-adj-verb-adv';
 import { GetWordFamiliesUseCase } from '@/modules/library/application/use-cases/get-word-families';
 import { ScoreDemoSpeechUseCase } from '@/modules/library/application/use-cases/score-demo-speech';
 import { GetLibraryPageUseCase } from '@/modules/library/application/use-cases/get-library-page';
@@ -640,6 +641,10 @@ export function makeSaveExtraVocabProgress(c: IContainer): SaveExtraVocabProgres
 
 export function makeSaveExtraVocabMark(c: IContainer): SaveExtraVocabMarkUseCase {
   return new SaveExtraVocabMarkUseCase(c.learnerProfiles, c.extraVocabMarks, c.extraVocab);
+}
+
+export function makeGetAdjVerbAdv(c: IContainer): GetAdjVerbAdvUseCase {
+  return new GetAdjVerbAdvUseCase(c.adjVerbAdv);
 }
 
 /**

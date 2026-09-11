@@ -41,6 +41,7 @@ import {
   createSaveExtraVocabProgressHandler,
 } from '@/modules/library/presentation/handlers/extra-vocab-progress';
 import { createSaveExtraVocabMarkHandler } from '@/modules/library/presentation/handlers/extra-vocab-marks';
+import { createGetAdjVerbAdvHandler } from '@/modules/library/presentation/handlers/get-adj-verb-adv';
 import { createGetWordFamiliesHandler } from '@/modules/library/presentation/handlers/get-word-families';
 import { createCompleteSessionHandler } from '@/modules/lessons/presentation/handlers/complete-session';
 import { createAdvanceStageHandler } from '@/modules/lessons/presentation/handlers/advance-stage';
@@ -86,6 +87,7 @@ import {
   makeGetExtraVocabProgress,
   makeSaveExtraVocabProgress,
   makeSaveExtraVocabMark,
+  makeGetAdjVerbAdv,
   makeGetWordFamilies,
   makeVerifyCertificate,
   makeGetMe,
@@ -357,6 +359,10 @@ export const saveExtraVocabProgressHandler = createSaveExtraVocabProgressHandler
 
 export const saveExtraVocabMarkHandler = createSaveExtraVocabMarkHandler(() =>
   makeSaveExtraVocabMark(container()),
+);
+
+export const getAdjVerbAdvHandler = createGetAdjVerbAdvHandler(() =>
+  makeGetAdjVerbAdv(container()),
 );
 
 /** The verb reference — the third of the three library screens. */

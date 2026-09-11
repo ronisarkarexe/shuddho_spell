@@ -99,7 +99,7 @@ function topicChildren(
  * is the wrong answer arriving before the right one.
  *
  * `/library/families`, `/library/vocabulary`, `/library/saifurs`,
- * `/library/extra-vocab`, `/library/formal-informal`,
+ * `/library/extra-vocab`, `/library/adj-verb-adv`, `/library/formal-informal`,
  * `/library/verbs`, `/library/verb-roadmap`, `/library/prepositions`,
  * `/library/questions` and
  * `/library/patterns` sit
@@ -143,6 +143,7 @@ export const NAV_ITEMS: readonly INavItem[] = Object.freeze([
   },
   { href: '/library/saifurs', labelKey: 'saifurs', glyph: 'library' },
   { href: '/library/extra-vocab', labelKey: 'extraVocab', glyph: 'library' },
+  { href: '/library/adj-verb-adv', labelKey: 'adjVerbAdv', glyph: 'library' },
   {
     href: '/library/formal-informal',
     labelKey: 'formalInformal',
