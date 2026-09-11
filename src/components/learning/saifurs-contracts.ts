@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const saifursMarkStatusSchema = z.enum(['learning', 'known']);
+
 export const saifursEntrySchema = z.object({
   word: z.string(),
   partOfSpeech: z.string(),
@@ -14,6 +16,7 @@ export const saifursEntrySchema = z.object({
   letter: z.string(),
   cursor: z.string(),
   serial: z.number(),
+  mark: saifursMarkStatusSchema.nullable(),
 });
 
 export const saifursPageSchema = z.object({
@@ -27,6 +30,8 @@ export const saifursPageSchema = z.object({
   partsOfSpeech: z
     .array(z.object({ partOfSpeech: z.string(), words: z.number() }))
     .readonly(),
+  learningCount: z.number(),
+  knownCount: z.number(),
 });
 
 export const saifursProgressSchema = z.object({
@@ -36,11 +41,21 @@ export const saifursProgressSchema = z.object({
   totalEntries: z.number(),
 });
 
+export const saifursMarkSchema = z.object({
+  word: z.string(),
+  mark: saifursMarkStatusSchema.nullable(),
+  learningCount: z.number(),
+  knownCount: z.number(),
+});
+
 export type SaifursEntryView = z.infer<typeof saifursEntrySchema>;
 export type SaifursPage = z.infer<typeof saifursPageSchema>;
 export type SaifursProgress = z.infer<typeof saifursProgressSchema>;
+export type SaifursMark = z.infer<typeof saifursMarkSchema>;
+export type SaifursMarkStatus = z.infer<typeof saifursMarkStatusSchema>;
 
 export const SAIFURS_PAGE_SIZE = 25;
 
 export type SaifursMode = 'read' | 'learn';
 export type SaifursAccent = 'british' | 'american';
+export type SaifursMarkFilter = '' | SaifursMarkStatus;

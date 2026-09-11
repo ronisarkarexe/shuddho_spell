@@ -1,3 +1,5 @@
+import { type SaifursMarkStatus } from '../../domain/value-objects/saifurs-mark-status';
+
 /** One card, ready to render. */
 export interface ISaifursEntryView {
   readonly word: string;
@@ -19,6 +21,14 @@ export interface ISaifursEntryView {
    * filter that renumbered the page would make that sentence untrue.
    */
   readonly serial: number;
+  /**
+   * This learner's mark, or null when they have not decided yet.
+   *
+   * A page bookmark cannot say which of the twenty-five they are actually
+   * studying. The mark lives on the card so Read, Learn and the Learning
+   * filter all see the same fact.
+   */
+  readonly mark: SaifursMarkStatus | null;
 }
 
 export interface ISaifursLetterTally {
@@ -41,6 +51,17 @@ export interface ISaifursPage {
   readonly totalEntries: number;
   readonly letters: readonly ISaifursLetterTally[];
   readonly partsOfSpeech: readonly ISaifursPosTally[];
+  /** Marks across the whole book, not the current filter. */
+  readonly learningCount: number;
+  readonly knownCount: number;
+}
+
+/** The result of setting or clearing one mark. */
+export interface ISaifursMarkView {
+  readonly word: string;
+  readonly mark: SaifursMarkStatus | null;
+  readonly learningCount: number;
+  readonly knownCount: number;
 }
 
 /** How far this learner has read in the unfiltered list. */

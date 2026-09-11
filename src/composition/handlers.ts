@@ -35,6 +35,7 @@ import {
   createGetSaifursProgressHandler,
   createSaveSaifursProgressHandler,
 } from '@/modules/library/presentation/handlers/saifurs-progress';
+import { createSaveSaifursMarkHandler } from '@/modules/library/presentation/handlers/saifurs-marks';
 import { createGetWordFamiliesHandler } from '@/modules/library/presentation/handlers/get-word-families';
 import { createCompleteSessionHandler } from '@/modules/lessons/presentation/handlers/complete-session';
 import { createAdvanceStageHandler } from '@/modules/lessons/presentation/handlers/advance-stage';
@@ -76,6 +77,7 @@ import {
   makeGetSaifursVocabulary,
   makeGetSaifursProgress,
   makeSaveSaifursProgress,
+  makeSaveSaifursMark,
   makeGetWordFamilies,
   makeVerifyCertificate,
   makeGetMe,
@@ -331,6 +333,10 @@ export const getSaifursProgressHandler = createGetSaifursProgressHandler(() =>
 
 export const saveSaifursProgressHandler = createSaveSaifursProgressHandler(() =>
   makeSaveSaifursProgress(container()),
+);
+
+export const saveSaifursMarkHandler = createSaveSaifursMarkHandler(() =>
+  makeSaveSaifursMark(container()),
 );
 
 /** The verb reference — the third of the three library screens. */

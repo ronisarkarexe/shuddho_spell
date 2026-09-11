@@ -4,10 +4,13 @@ import { useCallback, useEffect, useRef, useState, type ReactElement } from 'rea
 import { Glyph } from '@/components/icons/glyph';
 import {
   SAIFURS_PAGE_SIZE,
+  saifursMarkSchema,
   saifursPageSchema,
   saifursProgressSchema,
   type SaifursAccent,
   type SaifursEntryView,
+  type SaifursMarkFilter,
+  type SaifursMarkStatus,
   type SaifursMode,
   type SaifursPage,
   type SaifursProgress,
@@ -27,9 +30,10 @@ interface IFilters {
   readonly letter: string;
   readonly partOfSpeech: string;
   readonly startsWith: string;
+  readonly mark: SaifursMarkFilter;
 }
 
-const NO_FILTERS: IFilters = { letter: '', partOfSpeech: '', startsWith: '' };
+const NO_FILTERS: IFilters = { letter: '', partOfSpeech: '', startsWith: '', mark: '' };
 
 const ACCENT_LANG: Readonly<Record<SaifursAccent, string>> = {
   british: 'en-GB',
@@ -60,10 +64,44 @@ export function SaifursExplorer({
   const [accent, setAccent] = useState<SaifursAccent>(initialAccent);
   const [learnIndex, setLearnIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const [reload, setReload] = useState(0);
   const skipFirstFetch = useRef(true);
   const appliedSearch = useRef('');
 
-  const filtered = filters.letter !== '' || filters.partOfSpeech !== '' || filters.startsWith !== '';
+  const filtered =
+    filters.letter !== '' ||
+    filters.partOfSpeech !== '' ||
+    filters.startsWith !== '' ||
+    filters.mark !== '';
+
+  const saveMark = useCallback(
+    (word: string, status: SaifursMarkStatus | null): void => {
+      void apiFetch('/api/v1/library/saifurs/marks', {
+        schema: saifursMarkSchema,
+        method: 'PUT',
+        body: { word, status },
+      })
+        .then((next) => {
+          if (filters.mark !== '') {
+            setReload((current) => current + 1);
+            return;
+          }
+
+          setPage((currentPage) => ({
+            ...currentPage,
+            learningCount: next.learningCount,
+            knownCount: next.knownCount,
+            entries: currentPage.entries.map((entry) =>
+              entry.word === next.word ? { ...entry, mark: next.mark } : entry,
+            ),
+          }));
+        })
+        .catch(() => {
+          /* A failed mark must not blank the list. */
+        });
+    },
+    [filters.mark],
+  );
 
   const saveProgress = useCallback((pageToSave: number): void => {
     void apiFetch('/api/v1/library/saifurs/progress', {
@@ -114,6 +152,7 @@ export function SaifursExplorer({
         letter: filters.letter === '' ? undefined : filters.letter,
         partOfSpeech: filters.partOfSpeech === '' ? undefined : filters.partOfSpeech,
         startsWith: filters.startsWith === '' ? undefined : filters.startsWith,
+        mark: filters.mark === '' ? undefined : filters.mark,
       },
     })
       .then((next) => {
@@ -126,7 +165,12 @@ export function SaifursExplorer({
         setLearnIndex(0);
         setRevealed(false);
 
-        if (filters.letter === '' && filters.partOfSpeech === '' && filters.startsWith === '') {
+        if (
+          filters.letter === '' &&
+          filters.partOfSpeech === '' &&
+          filters.startsWith === '' &&
+          filters.mark === ''
+        ) {
           saveProgress(next.page);
         }
       })
@@ -144,7 +188,7 @@ export function SaifursExplorer({
     return () => {
       live = false;
     };
-  }, [pageNumber, filters, saveProgress]);
+  }, [pageNumber, filters, saveProgress, reload]);
 
   const goTo = useCallback((nextPage: number): void => {
     setPageNumber(nextPage);
@@ -163,6 +207,8 @@ export function SaifursExplorer({
   return (
     <div className="flex flex-col gap-4 sm:gap-5">
       <ProgressBanner
+        knownCount={page.knownCount}
+        learningCount={page.learningCount}
         onContinue={() => {
           appliedSearch.current = '';
           setTyped('');
@@ -227,6 +273,19 @@ export function SaifursExplorer({
           }}
         />
 
+        <MarkFilter
+          knownCount={page.knownCount}
+          learningCount={page.learningCount}
+          selected={filters.mark}
+          onSelect={(mark) => {
+            setFilters((current) => ({
+              ...current,
+              mark: current.mark === mark ? '' : mark,
+            }));
+            setPageNumber(1);
+          }}
+        />
+
         <div className="flex flex-wrap items-center gap-2">
           <span className="label">Part of speech</span>
           {page.partsOfSpeech.map((entry) => (
@@ -278,7 +337,14 @@ export function SaifursExplorer({
       {mode === 'read' && page.entries.length > 0 && (
         <ul className="flex flex-col gap-2">
           {page.entries.map((entry) => (
-            <WordCard accent={accent} entry={entry} key={entry.cursor} />
+            <WordCard
+              accent={accent}
+              entry={entry}
+              key={entry.cursor}
+              onMark={(status) => {
+                saveMark(entry.word, status);
+              }}
+            />
           ))}
         </ul>
       )}
@@ -298,6 +364,9 @@ export function SaifursExplorer({
           }}
           onReveal={() => {
             setRevealed(true);
+          }}
+          onMark={(status) => {
+            saveMark(current.word, status);
           }}
           revealed={revealed}
           total={page.entries.length}
@@ -452,14 +521,74 @@ function LetterStrip({
   );
 }
 
+function MarkFilter({
+  selected,
+  learningCount,
+  knownCount,
+  onSelect,
+}: {
+  readonly selected: SaifursMarkFilter;
+  readonly learningCount: number;
+  readonly knownCount: number;
+  readonly onSelect: (mark: SaifursMarkStatus) => void;
+}): ReactElement {
+  return (
+    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Study marks">
+      <span className="label">Marked</span>
+      <button
+        aria-pressed={selected === 'learning'}
+        className={cn(
+          'min-h-8 rounded-chip border px-3 py-1',
+          selected === 'learning'
+            ? 'border-primary-900 bg-primary-50 text-primary-900'
+            : 'border-neutral-300 text-muted hover:text-primary-900',
+        )}
+        onClick={() => {
+          onSelect('learning');
+        }}
+        type="button"
+      >
+        Learning
+        <span className="ml-1 font-bengali" lang="bn">
+          শিখছি
+        </span>{' '}
+        <span className="num text-[11px]">{learningCount}</span>
+      </button>
+      <button
+        aria-pressed={selected === 'known'}
+        className={cn(
+          'min-h-8 rounded-chip border px-3 py-1',
+          selected === 'known'
+            ? 'border-primary-900 bg-primary-50 text-primary-900'
+            : 'border-neutral-300 text-muted hover:text-primary-900',
+        )}
+        onClick={() => {
+          onSelect('known');
+        }}
+        type="button"
+      >
+        Known
+        <span className="ml-1 font-bengali" lang="bn">
+          জানি
+        </span>{' '}
+        <span className="num text-[11px]">{knownCount}</span>
+      </button>
+    </div>
+  );
+}
+
 function ProgressBanner({
   progress,
+  learningCount,
+  knownCount,
   onContinue,
 }: {
   readonly progress: SaifursProgress;
+  readonly learningCount: number;
+  readonly knownCount: number;
   readonly onContinue: () => void;
 }): ReactElement {
-  if (progress.wordsRead === 0) {
+  if (progress.wordsRead === 0 && learningCount === 0 && knownCount === 0) {
     return (
       <p className="rounded-card border border-hairline bg-surface px-4 py-3 text-muted">
         You have not started this list yet.{' '}
@@ -474,14 +603,13 @@ function ProgressBanner({
     <div className="flex flex-col gap-3 rounded-card border border-hairline bg-surface px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <div>
         <p className="text-primary-900">
-          You have read <span className="num">{progress.wordsRead}</span> of{' '}
-          <span className="num">{progress.totalEntries}</span> words. Last page{' '}
-          <span className="num">{progress.lastPage}</span>, up to word{' '}
+          Learning <span className="num">{learningCount}</span>, known{' '}
+          <span className="num">{knownCount}</span>. Last page{' '}
+          <span className="num">{progress.lastPage}</span>, read up to word{' '}
           <span className="num">{progress.lastSerial}</span>.
         </p>
         <p className="font-bengali text-muted" lang="bn">
-          {progress.wordsRead}টি পড়া হয়েছে। শেষ পাতা {progress.lastPage}। সেই পাতায় ফিরে যেতে
-          পারেন।
+          {learningCount}টি শিখছি, {knownCount}টি জানি। শেষ পাতা {progress.lastPage}।
         </p>
       </div>
       <button
@@ -580,17 +708,29 @@ function Pager({
 function WordCard({
   entry,
   accent,
+  onMark,
 }: {
   readonly entry: SaifursEntryView;
   readonly accent: SaifursAccent;
+  readonly onMark: (status: SaifursMarkStatus | null) => void;
 }): ReactElement {
   return (
-    <li className="rounded-card border border-hairline bg-surface px-3 py-3 sm:px-4">
+    <li
+      className={cn(
+        'rounded-card border px-3 py-3 sm:px-4',
+        entry.mark === 'learning'
+          ? 'border-primary-900 bg-primary-50'
+          : 'border-hairline bg-surface',
+      )}
+    >
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <span className="num text-muted">{entry.serial}</span>
-        <span className="font-medium text-primary-900">{entry.word}</span>
+        <SpokenWord accent={accent} word={entry.word} />
         <span className="num text-[11px] capitalize text-muted">{entry.partOfSpeech}</span>
         <HearButtons accent={accent} entry={entry} />
+      </div>
+      <div className="mt-2">
+        <MarkButtons mark={entry.mark} onChange={onMark} />
       </div>
       <IpaLine accent={accent} ipaBr={entry.ipaBr} ipaUs={entry.ipaUs} />
       <p className="mt-1 font-bengali text-primary-900" lang="bn">
@@ -608,6 +748,7 @@ function LearnCard({
   total,
   revealed,
   onReveal,
+  onMark,
   onNext,
   onPrevious,
 }: {
@@ -617,11 +758,19 @@ function LearnCard({
   readonly total: number;
   readonly revealed: boolean;
   readonly onReveal: () => void;
+  readonly onMark: (status: SaifursMarkStatus | null) => void;
   readonly onNext: () => void;
   readonly onPrevious: () => void;
 }): ReactElement {
   return (
-    <div className="flex flex-col gap-4 rounded-card border border-hairline bg-surface p-4 sm:p-6">
+    <div
+      className={cn(
+        'flex flex-col gap-4 rounded-card border p-4 sm:p-6',
+        entry.mark === 'learning'
+          ? 'border-primary-900 bg-primary-50'
+          : 'border-hairline bg-surface',
+      )}
+    >
       <p className="num text-muted">
         {String(index + 1)} of {String(total)} on this page
         <span className="ml-2 font-bengali" lang="bn">
@@ -630,12 +779,11 @@ function LearnCard({
       </p>
 
       <div className="flex flex-col items-start gap-2">
-        <p className="font-display text-3xl tracking-tight text-primary-900 sm:text-4xl">
-          {entry.word}
-        </p>
+        <SpokenWord accent={accent} className="font-display text-3xl tracking-tight sm:text-4xl" word={entry.word} />
         <span className="num text-[11px] capitalize text-muted">{entry.partOfSpeech}</span>
         <IpaLine accent={accent} ipaBr={entry.ipaBr} ipaUs={entry.ipaUs} />
         <HearButtons accent={accent} entry={entry} />
+        <MarkButtons mark={entry.mark} onChange={onMark} />
       </div>
 
       {revealed ? (
@@ -682,6 +830,85 @@ function LearnCard({
           </span>
         </button>
       </div>
+    </div>
+  );
+}
+
+function SpokenWord({
+  word,
+  accent,
+  className,
+}: {
+  readonly word: string;
+  readonly accent: SaifursAccent;
+  readonly className?: string;
+}): ReactElement {
+  const { supported, say } = useSpeech();
+  const lang = ACCENT_LANG[accent];
+
+  if (!supported) {
+    return <span className={cn('font-medium text-primary-900', className)}>{word}</span>;
+  }
+
+  return (
+    <button
+      aria-label={`Hear ${word}`}
+      className={cn('font-medium text-primary-900 hover:underline', className)}
+      onClick={() => {
+        say(word, DICTATION_RATE, lang);
+      }}
+      type="button"
+    >
+      {word}
+    </button>
+  );
+}
+
+function MarkButtons({
+  mark,
+  onChange,
+}: {
+  readonly mark: SaifursMarkStatus | null;
+  readonly onChange: (status: SaifursMarkStatus | null) => void;
+}): ReactElement {
+  return (
+    <div className="inline-flex flex-wrap gap-1" role="group" aria-label="Study mark">
+      <button
+        aria-pressed={mark === 'learning'}
+        className={cn(
+          'min-h-8 rounded-chip border px-2.5 py-0.5 text-[11px]',
+          mark === 'learning'
+            ? 'border-primary-900 bg-primary-900 text-surface'
+            : 'border-neutral-300 text-muted hover:text-primary-900',
+        )}
+        onClick={() => {
+          onChange(mark === 'learning' ? null : 'learning');
+        }}
+        type="button"
+      >
+        Learning
+        <span className="ml-1 font-bengali" lang="bn">
+          শিখছি
+        </span>
+      </button>
+      <button
+        aria-pressed={mark === 'known'}
+        className={cn(
+          'min-h-8 rounded-chip border px-2.5 py-0.5 text-[11px]',
+          mark === 'known'
+            ? 'border-primary-900 bg-primary-900 text-surface'
+            : 'border-neutral-300 text-muted hover:text-primary-900',
+        )}
+        onClick={() => {
+          onChange(mark === 'known' ? null : 'known');
+        }}
+        type="button"
+      >
+        Known
+        <span className="ml-1 font-bengali" lang="bn">
+          জানি
+        </span>
+      </button>
     </div>
   );
 }

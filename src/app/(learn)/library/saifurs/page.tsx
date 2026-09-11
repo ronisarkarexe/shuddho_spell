@@ -19,13 +19,13 @@ export default async function SaifursVocabularyPage(): Promise<ReactElement> {
 
   const [audio, opening] = await Promise.all([
     readAudioPreferences(user.userId),
-    readSaifursVocabulary(SAIFURS_PAGE_SIZE, 1),
+    readSaifursVocabulary(user.userId, SAIFURS_PAGE_SIZE, 1),
   ]);
 
   const progress = await readSaifursProgress(user.userId);
   const page =
     progress.wordsRead > 0
-      ? await readSaifursVocabulary(SAIFURS_PAGE_SIZE, progress.lastPage)
+      ? await readSaifursVocabulary(user.userId, SAIFURS_PAGE_SIZE, progress.lastPage)
       : opening;
 
   return (
@@ -42,12 +42,14 @@ export default async function SaifursVocabularyPage(): Promise<ReactElement> {
         </div>
         <p className="max-w-3xl text-muted">
           Twenty-five words on a page. Press a word to hear it in British or American
-          English. Read the list, or flip the cards to learn — meaning, synonym, antonym
-          and a sentence sit on the same card.
+          English. Mark the ones you are learning, then open Learning to study just
+          those. Read the list, or flip the cards — meaning, synonym, antonym and a
+          sentence sit on the same card.
         </p>
         <p className="max-w-3xl font-bengali text-muted" lang="bn">
-          প্রতি পাতায় পঁচিশটি শব্দ। ব্রিটিশ ও আমেরিকান উচ্চারণ শুনতে পারেন। পড়ুন, অথবা কার্ড
-          উল্টে শিখুন — অর্থ, প্রতিশব্দ, বিপরীত শব্দ ও বাক্য একই জায়গায়।
+          প্রতি পাতায় পঁচিশটি শব্দ। ব্রিটিশ ও আমেরিকান উচ্চারণ শুনতে পারেন। যেগুলো শিখছেন
+          সেগুলো চিহ্নিত করুন, তারপর শিখছি খুলে শুধু সেগুলো পড়ুন। পড়ুন, অথবা কার্ড উল্টে
+          শিখুন — অর্থ, প্রতিশব্দ, বিপরীত শব্দ ও বাক্য একই জায়গায়।
         </p>
       </header>
 

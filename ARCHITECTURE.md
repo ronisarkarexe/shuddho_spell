@@ -269,6 +269,7 @@ Recorded as decisions in section 5. Same convention, same wiring.
 | `CERTIFICATE_REPOSITORY` | `ICertificateRepository` | certificates | 12 |
 | `SAIFURS_SOURCE` | `ISaifursSource` | library | 13 |
 | `SAIFURS_PROGRESS_REPOSITORY` | `ISaifursProgressRepository` | library | 13 |
+| `SAIFURS_MARK_REPOSITORY` | `ISaifursMarkRepository` | library | 13 |
 | `UNIVERSITY_CATALOG` | `IUniversityCatalog` | education | — |
 
 ### Application ports — `application/ports/`
@@ -342,6 +343,7 @@ Enumerated columns are `text` + a `check` constraint mirroring the TypeScript co
 | `009` | `rate_limits` | infrastructure | service role only (see decision D6) |
 | `023` | `formal_informal_progress` | learner | own `profile_id` · no client write |
 | `024` | `saifurs_vocabulary_progress` | learner | own `profile_id` · no client write |
+| `025` | `saifurs_word_marks` | learner | own `profile_id` · no client write |
 
 Every learner table carries
 `profile_id uuid not null references learner_profiles(id) on delete cascade`.
@@ -1487,7 +1489,10 @@ flagged `needsReview`. The British/American table is two rows per idea so a sear
 `mate` or `dude` both land.
 
 **D82 — Saifur's vocabulary is a sixth content corpus, not a printed book (user request, 2026-09-02).**
-The *shape* is the one Bangladeshi learners already know from an admission vocabulary book: word, pronunciation, Bangla meaning, synonym, antonym, sentence. The entries are original public-dictionary words, not a transcription of any copyrighted list. Folding them into `words` would put hundreds of untaught items into the exam distractor pool — the same reason the IELTS vocabulary stays apart. So: `content/saifurs-vocabulary/` holds one line per card (`word | pos | ipaBr | ipaUs | bangla | synonyms | antonyms | exampleEn | exampleBn`), validated at load, and the screen at `/library/saifurs` is a reference. Twenty-five words to a page. British and American IPA sit on the same card; the learner picks which accent the browser speaks. Two modes share the page: **Read** is the book, **Learn** is one card at a time with the meaning hidden until they ask. Where they stopped is a row in `saifurs_vocabulary_progress` — last page, last serial, furthest word reached — written by the server from the page number they opened, never from localStorage.
+The *shape* is the one Bangladeshi learners already know from an admission vocabulary book: word, pronunciation, Bangla meaning, synonym, antonym, sentence. The entries are original public-dictionary words, not a transcription of any copyrighted list. Folding them into `words` would put hundreds of untaught items into the exam distractor pool — the same reason the IELTS vocabulary stays apart. So: `content/saifurs-vocabulary/` holds one line per card (`word | pos | ipaBr | ipaUs | bangla | synonyms | antonyms | exampleEn | exampleBn`), validated at load, and the screen at `/library/saifurs` is a reference. Twenty-five words to a page. British and American IPA sit on the same card; the learner picks which accent the browser speaks, and pressing the word itself says it in that accent. Two modes share the page: **Read** is the book, **Learn** is one card at a time with the meaning hidden until they ask. Where they stopped is a row in `saifurs_vocabulary_progress` — last page, last serial, furthest word reached — written by the server from the page number they opened, never from localStorage.
+
+**D86 — Saifur's Learning / Known marks are per word, not a second bookmark (user request, 2026-09-11).**
+The page bookmark cannot say which of the twenty-five they are actually studying. `saifurs_word_marks` is one row per learner per headword (`learning` or `known`); clearing the mark deletes the row. The word is checked against the corpus before write, so a client cannot store a ghost. The Learning filter pages only those cards, still twenty-five at a time, still with both accents. This is not mastery and is not `review_items` — nobody has been asked the word in a lesson.
 
 **D83 — each library topic is its own rail item (user request, 2026-09-02).**
 Saifur's was one named list. The other three shelves are filed by topic — 12 IELTS vocabulary topics, 11 informal/formal topics, 27 word-family topics — and a learner who wants *conflict* or *education* should not have to open a mixed list first. So the rail nests a child under Word families, Vocabulary, and Informal / formal for every topic the corpus already names. `/library/vocabulary/conflict` (and the same shape for the other two shelves) is the Saifur's screen for that slice: twenty-five to a page, British or American speech, Read or Learn. No Bangla or IPA is invented for the IELTS vocabulary pairs; the families already carry a Bangla gloss and still have no IPA. Topic bookmarks are not written to the existing informal/formal or Saifur's progress rows — those serials are over the whole corpus, and saving page 3 of slang as page 3 of the book would land them in the wrong list.

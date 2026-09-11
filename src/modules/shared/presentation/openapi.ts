@@ -45,6 +45,7 @@ import {
 } from '@/modules/library/presentation/dto/vocabulary-requests';
 import {
   saifursQuerySchema,
+  saveSaifursMarkBodySchema,
   saveSaifursProgressBodySchema,
 } from '@/modules/library/presentation/dto/saifurs-requests';
 import { wordFamilyQuerySchema } from '@/modules/library/presentation/dto/word-family-requests';
@@ -315,6 +316,15 @@ registry.registerPath({
     'Bookmark the last unfiltered page of Saifur’s vocabulary. The serial is computed on the server from the page number; the client may not post a count.',
   request: { body: { content: { 'application/json': { schema: saveSaifursProgressBodySchema } } } },
   responses: ok(z.unknown(), 'The bookmark.'),
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/library/saifurs/marks',
+  summary:
+    'Mark a Saifur’s card as Learning or Known, or clear the mark. The word is checked against the corpus; a string that is not a headword is rejected rather than stored.',
+  request: { body: { content: { 'application/json': { schema: saveSaifursMarkBodySchema } } } },
+  responses: ok(z.unknown(), 'The mark and the learner’s Learning / Known counts.'),
 });
 
 registry.registerPath({

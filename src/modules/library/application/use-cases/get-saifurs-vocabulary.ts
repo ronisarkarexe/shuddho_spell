@@ -1,5 +1,9 @@
+import { ProfileNotFoundError } from '@/modules/auth/domain/errors/profile-not-found.error';
+import { type ILearnerProfileRepository } from '@/modules/auth/domain/repositories/learner-profile-repository';
 import { type SaifursEntry } from '../../domain/entities/saifurs-entry';
+import { type ISaifursMarkRepository } from '../../domain/repositories/saifurs-mark-repository';
 import { type ISaifursSource } from '../../domain/repositories/saifurs-source';
+import { type SaifursMarkStatus } from '../../domain/value-objects/saifurs-mark-status';
 import {
   type ISaifursEntryView,
   type ISaifursLetterTally,
@@ -8,9 +12,12 @@ import {
 } from '../dto/saifurs-view';
 
 export interface IGetSaifursVocabularyInput {
+  readonly userId: string;
   readonly letter?: string;
   readonly partOfSpeech?: string;
   readonly startsWith?: string;
+  /** Only cards this learner has marked this way. */
+  readonly mark?: SaifursMarkStatus;
   /** 1-based. Out of range is clamped, never an error. */
   readonly page?: number;
   readonly pageSize: number;
@@ -27,11 +34,39 @@ const MAX_PAGE_SIZE = 100;
  * cheap and stable.
  *
  * **Serials are over the whole corpus.** Filtering does not renumber them.
+ *
+ * **Marks are this learner's.** The page bookmark says where they stopped;
+ * the mark on each card says which of the twenty-five they are studying.
  */
 export class GetSaifursVocabularyUseCase {
-  constructor(private readonly source: ISaifursSource) {}
+  constructor(
+    private readonly source: ISaifursSource,
+    private readonly profiles: ILearnerProfileRepository,
+    private readonly marks: ISaifursMarkRepository,
+  ) {}
 
   async execute(input: IGetSaifursVocabularyInput): Promise<ISaifursPage> {
+    const profile = await this.profiles.findByUserId(input.userId);
+
+    if (profile === null) {
+      throw new ProfileNotFoundError(input.userId);
+    }
+
+    const stored = await this.marks.findByProfile(profile.id);
+    const markOf = new Map<string, SaifursMarkStatus>();
+    let learningCount = 0;
+    let knownCount = 0;
+
+    for (const mark of stored) {
+      markOf.set(mark.word, mark.status);
+
+      if (mark.status === 'learning') {
+        learningCount += 1;
+      } else {
+        knownCount += 1;
+      }
+    }
+
     const all = this.source.listAll();
     const serialOf = new Map<string, number>();
 
@@ -42,7 +77,7 @@ export class GetSaifursVocabularyUseCase {
       }
     }
 
-    const matched = all.filter((entry) => keeps(entry, input));
+    const matched = all.filter((entry) => keeps(entry, input, markOf.get(entry.cursor) ?? null));
     const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, input.pageSize));
     const totalPages = Math.max(1, Math.ceil(matched.length / pageSize));
     const requested = input.page ?? 1;
@@ -50,8 +85,10 @@ export class GetSaifursVocabularyUseCase {
     const start = (page - 1) * pageSize;
     const slice = matched.slice(start, start + pageSize);
 
-    return Promise.resolve({
-      entries: slice.map((entry) => view(entry, serialOf.get(entry.cursor) ?? 0)),
+    return {
+      entries: slice.map((entry) =>
+        view(entry, serialOf.get(entry.cursor) ?? 0, markOf.get(entry.cursor) ?? null),
+      ),
       page,
       totalPages,
       pageSize,
@@ -59,11 +96,17 @@ export class GetSaifursVocabularyUseCase {
       totalEntries: all.length,
       letters: byLetter(all),
       partsOfSpeech: byPos(all),
-    });
+      learningCount,
+      knownCount,
+    };
   }
 }
 
-function view(entry: SaifursEntry, serial: number): ISaifursEntryView {
+function view(
+  entry: SaifursEntry,
+  serial: number,
+  mark: SaifursMarkStatus | null,
+): ISaifursEntryView {
   return {
     word: entry.word,
     partOfSpeech: entry.partOfSpeech,
@@ -78,15 +121,24 @@ function view(entry: SaifursEntry, serial: number): ISaifursEntryView {
     letter: entry.letter,
     cursor: entry.cursor,
     serial,
+    mark,
   };
 }
 
-function keeps(entry: SaifursEntry, input: IGetSaifursVocabularyInput): boolean {
+function keeps(
+  entry: SaifursEntry,
+  input: IGetSaifursVocabularyInput,
+  mark: SaifursMarkStatus | null,
+): boolean {
   if (input.letter !== undefined && entry.letter !== input.letter) {
     return false;
   }
 
   if (input.partOfSpeech !== undefined && entry.partOfSpeech !== input.partOfSpeech) {
+    return false;
+  }
+
+  if (input.mark !== undefined && mark !== input.mark) {
     return false;
   }
 

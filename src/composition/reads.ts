@@ -276,8 +276,12 @@ export const readFormalInformalProgress = cache(
 );
 
 export const readSaifursVocabulary = cache(
-  async (pageSize: number, page = 1): Promise<ISaifursPage> =>
-    makeGetSaifursVocabulary(createContainer(crypto.randomUUID())).execute({ pageSize, page }),
+  async (userId: string, pageSize: number, page = 1): Promise<ISaifursPage> =>
+    makeGetSaifursVocabulary(createContainer(crypto.randomUUID())).execute({
+      userId,
+      pageSize,
+      page,
+    }),
 );
 
 /**
