@@ -21,6 +21,10 @@ import { type IVocabularyDrill } from '@/modules/library/application/dto/vocabul
 import { type IVocabularyPage } from '@/modules/library/application/dto/vocabulary-view';
 import { type IFormalInformalPage, type IFormalInformalProgressView } from '@/modules/library/application/dto/formal-informal-view';
 import { type ISaifursPage, type ISaifursProgressView } from '@/modules/library/application/dto/saifurs-view';
+import {
+  type IExtraVocabPage,
+  type IExtraVocabProgressView,
+} from '@/modules/library/application/dto/extra-vocab-view';
 import { type IWordFamilyPage } from '@/modules/library/application/dto/word-family-view';
 import { type IWordPhonemeStrip } from '@/modules/library/application/dto/phoneme-strip';
 import { type IProgramDayDetail } from '@/modules/program/application/dto/program-day-detail';
@@ -68,6 +72,8 @@ import {
   makeGetFormalInformalProgress,
   makeGetSaifursVocabulary,
   makeGetSaifursProgress,
+  makeGetExtraVocab,
+  makeGetExtraVocabProgress,
   makeGetWordFamilies,
   makeGetPhonemeStrips,
   makeGetPracticeQueue,
@@ -304,6 +310,45 @@ export const readSaifursProgress = cache(
           lastSerial: 0,
           wordsRead: 0,
           totalEntries: container.saifurs.listAll().length,
+        };
+      }
+
+      throw error;
+    }
+  },
+);
+
+export const readExtraVocab = cache(
+  async (userId: string, pageSize: number, page = 1): Promise<IExtraVocabPage> =>
+    makeGetExtraVocab(createContainer(crypto.randomUUID())).execute({
+      userId,
+      pageSize,
+      page,
+    }),
+);
+
+/**
+ * Extra-vocabulary bookmark. Same missing-table fallback as Saifur's: the
+ * word list is compiled and the page must still open if migration 025 is not
+ * applied yet.
+ */
+export const readExtraVocabProgress = cache(
+  async (userId: string): Promise<IExtraVocabProgressView> => {
+    const container = createContainer(crypto.randomUUID());
+
+    try {
+      return await makeGetExtraVocabProgress(container).execute({ userId });
+    } catch (error: unknown) {
+      const databaseFailure =
+        error instanceof DatabaseError ||
+        (error instanceof Error && error.name === 'DatabaseError');
+
+      if (databaseFailure) {
+        return {
+          lastPage: 1,
+          lastSerial: 0,
+          wordsRead: 0,
+          totalEntries: container.extraVocab.listAll().length,
         };
       }
 

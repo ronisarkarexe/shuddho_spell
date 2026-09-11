@@ -1,24 +1,24 @@
 import { type IDatabase } from '@/modules/shared/infrastructure/persistence/database';
 import { DatabaseError } from '@/modules/shared/infrastructure/persistence/database-error';
-import { type SaifursWordMark } from '../../../domain/entities/saifurs-word-mark';
-import { type ISaifursMarkRepository } from '../../../domain/repositories/saifurs-mark-repository';
+import { type ExtraVocabWordMark } from '../../../domain/entities/extra-vocab-word-mark';
+import { type IExtraVocabMarkRepository } from '../../../domain/repositories/extra-vocab-mark-repository';
 import {
-  SAIFURS_MARK_COLUMNS,
-  toSaifursWordMarkRow,
-  toSaifursWordMarks,
-} from '../../mappers/saifurs-word-mark.mapper';
+  EXTRA_VOCAB_MARK_COLUMNS,
+  toExtraVocabWordMarkRow,
+  toExtraVocabWordMarks,
+} from '../../mappers/extra-vocab-word-mark.mapper';
 
-const TABLE = 'saifurs_word_marks';
+const TABLE = 'extra_vocabulary_marks';
 
-export class SupabaseSaifursMarkRepository implements ISaifursMarkRepository {
+export class SupabaseExtraVocabMarkRepository implements IExtraVocabMarkRepository {
   constructor(private readonly db: IDatabase) {}
 
-  async findByProfile(profileId: string): Promise<readonly SaifursWordMark[]> {
+  async findByProfile(profileId: string): Promise<readonly ExtraVocabWordMark[]> {
     try {
-      return toSaifursWordMarks(
+      return toExtraVocabWordMarks(
         await this.db.select({
           table: TABLE,
-          columns: SAIFURS_MARK_COLUMNS,
+          columns: EXTRA_VOCAB_MARK_COLUMNS,
           eq: { profile_id: profileId },
         }),
       );
@@ -31,8 +31,8 @@ export class SupabaseSaifursMarkRepository implements ISaifursMarkRepository {
     }
   }
 
-  async upsert(mark: SaifursWordMark): Promise<void> {
-    await this.db.upsert(TABLE, [toSaifursWordMarkRow(mark)], {
+  async upsert(mark: ExtraVocabWordMark): Promise<void> {
+    await this.db.upsert(TABLE, [toExtraVocabWordMarkRow(mark)], {
       onConflict: 'profile_id,word',
       ignoreDuplicates: false,
     });

@@ -40,6 +40,9 @@ import { type IFormalInformalSource } from '@/modules/library/domain/repositorie
 import { type IFormalInformalProgressRepository } from '@/modules/library/domain/repositories/formal-informal-progress-repository';
 import { type ISaifursSource } from '@/modules/library/domain/repositories/saifurs-source';
 import { type ISaifursProgressRepository } from '@/modules/library/domain/repositories/saifurs-progress-repository';
+import { type IExtraVocabSource } from '@/modules/library/domain/repositories/extra-vocab-source';
+import { type IExtraVocabProgressRepository } from '@/modules/library/domain/repositories/extra-vocab-progress-repository';
+import { type IExtraVocabMarkRepository } from '@/modules/library/domain/repositories/extra-vocab-mark-repository';
 import { type IVerbSource } from '@/modules/library/domain/repositories/verb-source';
 import { type ICourseWordIndex } from '@/modules/library/domain/repositories/course-word-index';
 import { type ISentenceItemRepository } from '@/modules/library/domain/repositories/sentence-item-repository';
@@ -55,6 +58,9 @@ import { FormalInformalContentSource } from '@/modules/library/infrastructure/pe
 import { SupabaseFormalInformalProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/formal-informal-progress.repository';
 import { SaifursContentSource } from '@/modules/library/infrastructure/persistence/content/saifurs.source';
 import { SupabaseSaifursProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/saifurs-progress.repository';
+import { ExtraVocabContentSource } from '@/modules/library/infrastructure/persistence/content/extra-vocab.source';
+import { SupabaseExtraVocabProgressRepository } from '@/modules/library/infrastructure/persistence/supabase/extra-vocab-progress.repository';
+import { SupabaseExtraVocabMarkRepository } from '@/modules/library/infrastructure/persistence/supabase/extra-vocab-mark.repository';
 import { VerbContentSource } from '@/modules/library/infrastructure/persistence/content/verb.source';
 import { ContentCourseWordIndex } from '@/modules/library/infrastructure/persistence/content/course-word.index';
 import { SupabaseSentenceItemRepository } from '@/modules/library/infrastructure/persistence/supabase/sentence-item.repository';
@@ -146,6 +152,13 @@ export interface IContainer {
    * from a page number — the serial is computed, never posted.
    */
   readonly saifursProgress: ISaifursProgressRepository;
+  /**
+   * Extra vocabulary — a seventh corpus. Academic words, not Saifur's
+   * admission list, and not the IELTS synonym pairs.
+   */
+  readonly extraVocab: IExtraVocabSource;
+  readonly extraVocabProgress: IExtraVocabProgressRepository;
+  readonly extraVocabMarks: IExtraVocabMarkRepository;
   /**
    * The thousand verbs in all five forms. Content again, and the fourth corpus
    * — the only one whose forms are mostly *derived* rather than stored, which
@@ -256,6 +269,7 @@ export function createContainer(requestId: string): IContainer {
   const vocabulary = new VocabularyContentSource();
   const formalInformal = new FormalInformalContentSource();
   const saifurs = new SaifursContentSource();
+  const extraVocab = new ExtraVocabContentSource();
   const verbs = new VerbContentSource();
   const courseWords = new ContentCourseWordIndex();
   const speechScorer = new ConfusionMapSpeechScorer();
@@ -285,6 +299,9 @@ export function createContainer(requestId: string): IContainer {
     formalInformalProgress: new SupabaseFormalInformalProgressRepository(db),
     saifurs,
     saifursProgress: new SupabaseSaifursProgressRepository(db),
+    extraVocab,
+    extraVocabProgress: new SupabaseExtraVocabProgressRepository(db),
+    extraVocabMarks: new SupabaseExtraVocabMarkRepository(db),
     verbs,
     courseWords,
     ruleFamilies: new SupabaseRuleFamilyRepository(db),

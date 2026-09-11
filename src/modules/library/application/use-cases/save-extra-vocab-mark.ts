@@ -1,33 +1,26 @@
 import { ProfileNotFoundError } from '@/modules/auth/domain/errors/profile-not-found.error';
 import { type ILearnerProfileRepository } from '@/modules/auth/domain/repositories/learner-profile-repository';
-import { SaifursWordMark } from '../../domain/entities/saifurs-word-mark';
-import { SaifursWordNotFoundError } from '../../domain/errors/saifurs-word-not-found.error';
-import { type ISaifursMarkRepository } from '../../domain/repositories/saifurs-mark-repository';
-import { type ISaifursSource } from '../../domain/repositories/saifurs-source';
-import { type SaifursMarkStatus } from '../../domain/value-objects/saifurs-mark-status';
-import { type ISaifursMarkView } from '../dto/saifurs-view';
+import { ExtraVocabWordMark } from '../../domain/entities/extra-vocab-word-mark';
+import { ExtraVocabWordNotFoundError } from '../../domain/errors/extra-vocab-word-not-found.error';
+import { type IExtraVocabMarkRepository } from '../../domain/repositories/extra-vocab-mark-repository';
+import { type IExtraVocabSource } from '../../domain/repositories/extra-vocab-source';
+import { type ExtraVocabMarkStatus } from '../../domain/value-objects/extra-vocab-mark-status';
+import { type IExtraVocabMarkView } from '../dto/extra-vocab-view';
 
-export interface ISaveSaifursMarkInput {
+export interface ISaveExtraVocabMarkInput {
   readonly userId: string;
   readonly word: string;
-  /** `null` clears the mark. */
-  readonly status: SaifursMarkStatus | null;
+  readonly status: ExtraVocabMarkStatus | null;
 }
 
-/**
- * Sets or clears this learner's Learning / Known mark on one card.
- *
- * The word is taken from the corpus, never trusted from the client beyond
- * identity: a string that is not a headword is rejected rather than stored.
- */
-export class SaveSaifursMarkUseCase {
+export class SaveExtraVocabMarkUseCase {
   constructor(
     private readonly profiles: ILearnerProfileRepository,
-    private readonly marks: ISaifursMarkRepository,
-    private readonly source: ISaifursSource,
+    private readonly marks: IExtraVocabMarkRepository,
+    private readonly source: IExtraVocabSource,
   ) {}
 
-  async execute(input: ISaveSaifursMarkInput): Promise<ISaifursMarkView> {
+  async execute(input: ISaveExtraVocabMarkInput): Promise<IExtraVocabMarkView> {
     const profile = await this.profiles.findByUserId(input.userId);
 
     if (profile === null) {
@@ -37,14 +30,14 @@ export class SaveSaifursMarkUseCase {
     const exists = this.source.listAll().some((entry) => entry.cursor === input.word);
 
     if (!exists) {
-      throw new SaifursWordNotFoundError(input.word);
+      throw new ExtraVocabWordNotFoundError(input.word);
     }
 
     if (input.status === null) {
       await this.marks.deleteByProfileAndWord(profile.id, input.word);
     } else {
       await this.marks.upsert(
-        SaifursWordMark.create({
+        ExtraVocabWordMark.create({
           profileId: profile.id,
           word: input.word,
           status: input.status,

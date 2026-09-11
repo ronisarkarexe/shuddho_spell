@@ -47,6 +47,11 @@ import {
   saifursQuerySchema,
   saveSaifursProgressBodySchema,
 } from '@/modules/library/presentation/dto/saifurs-requests';
+import {
+  extraVocabQuerySchema,
+  saveExtraVocabMarkBodySchema,
+  saveExtraVocabProgressBodySchema,
+} from '@/modules/library/presentation/dto/extra-vocab-requests';
 import { wordFamilyQuerySchema } from '@/modules/library/presentation/dto/word-family-requests';
 import {
   demoSpeechBodySchema,
@@ -315,6 +320,33 @@ registry.registerPath({
     'Bookmark the last unfiltered page of Saifur’s vocabulary. The serial is computed on the server from the page number; the client may not post a count.',
   request: { body: { content: { 'application/json': { schema: saveSaifursProgressBodySchema } } } },
   responses: ok(z.unknown(), 'The bookmark.'),
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/library/extra-vocab',
+  summary:
+    'A numbered page of Extra vocabulary — twenty-five academic words, British and American IPA, Bangla, and this learner’s Learning / Known marks. A separate list from Saifur’s.',
+  request: { query: extraVocabQuerySchema },
+  responses: ok(z.unknown(), 'The page, the letter and part-of-speech indexes, mark counts, and the page number.'),
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/library/extra-vocab/progress',
+  summary:
+    'Bookmark the last unfiltered page of Extra vocabulary. The serial is computed on the server from the page number; the client may not post a count.',
+  request: { body: { content: { 'application/json': { schema: saveExtraVocabProgressBodySchema } } } },
+  responses: ok(z.unknown(), 'The bookmark.'),
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/api/v1/library/extra-vocab/marks',
+  summary:
+    'Set or clear a Learning / Known mark on one Extra vocabulary headword. Null status removes the mark. The word must exist in the Extra vocabulary corpus.',
+  request: { body: { content: { 'application/json': { schema: saveExtraVocabMarkBodySchema } } } },
+  responses: ok(z.unknown(), 'The mark and the updated Learning / Known counts.'),
 });
 
 registry.registerPath({

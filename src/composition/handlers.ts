@@ -35,6 +35,12 @@ import {
   createGetSaifursProgressHandler,
   createSaveSaifursProgressHandler,
 } from '@/modules/library/presentation/handlers/saifurs-progress';
+import { createGetExtraVocabHandler } from '@/modules/library/presentation/handlers/get-extra-vocab';
+import {
+  createGetExtraVocabProgressHandler,
+  createSaveExtraVocabProgressHandler,
+} from '@/modules/library/presentation/handlers/extra-vocab-progress';
+import { createSaveExtraVocabMarkHandler } from '@/modules/library/presentation/handlers/extra-vocab-marks';
 import { createGetWordFamiliesHandler } from '@/modules/library/presentation/handlers/get-word-families';
 import { createCompleteSessionHandler } from '@/modules/lessons/presentation/handlers/complete-session';
 import { createAdvanceStageHandler } from '@/modules/lessons/presentation/handlers/advance-stage';
@@ -76,6 +82,10 @@ import {
   makeGetSaifursVocabulary,
   makeGetSaifursProgress,
   makeSaveSaifursProgress,
+  makeGetExtraVocab,
+  makeGetExtraVocabProgress,
+  makeSaveExtraVocabProgress,
+  makeSaveExtraVocabMark,
   makeGetWordFamilies,
   makeVerifyCertificate,
   makeGetMe,
@@ -331,6 +341,22 @@ export const getSaifursProgressHandler = createGetSaifursProgressHandler(() =>
 
 export const saveSaifursProgressHandler = createSaveSaifursProgressHandler(() =>
   makeSaveSaifursProgress(container()),
+);
+
+export const getExtraVocabHandler = createGetExtraVocabHandler(() =>
+  makeGetExtraVocab(container()),
+);
+
+export const getExtraVocabProgressHandler = createGetExtraVocabProgressHandler(() =>
+  makeGetExtraVocabProgress(container()),
+);
+
+export const saveExtraVocabProgressHandler = createSaveExtraVocabProgressHandler(() =>
+  makeSaveExtraVocabProgress(container()),
+);
+
+export const saveExtraVocabMarkHandler = createSaveExtraVocabMarkHandler(() =>
+  makeSaveExtraVocabMark(container()),
 );
 
 /** The verb reference — the third of the three library screens. */
