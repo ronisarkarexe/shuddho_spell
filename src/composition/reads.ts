@@ -25,6 +25,7 @@ import {
   type IExtraVocabPage,
   type IExtraVocabProgressView,
 } from '@/modules/library/application/dto/extra-vocab-view';
+import { type IAdjVerbAdvPage } from '@/modules/library/application/dto/adj-verb-adv-view';
 import { type IWordFamilyPage } from '@/modules/library/application/dto/word-family-view';
 import { type IWordPhonemeStrip } from '@/modules/library/application/dto/phoneme-strip';
 import { type IProgramDayDetail } from '@/modules/program/application/dto/program-day-detail';
@@ -74,6 +75,7 @@ import {
   makeGetSaifursProgress,
   makeGetExtraVocab,
   makeGetExtraVocabProgress,
+  makeGetAdjVerbAdv,
   makeGetWordFamilies,
   makeGetPhonemeStrips,
   makeGetPracticeQueue,
@@ -355,6 +357,14 @@ export const readExtraVocabProgress = cache(
       throw error;
     }
   },
+);
+
+export const readAdjVerbAdv = cache(
+  async (pageSize: number, page = 1): Promise<IAdjVerbAdvPage> =>
+    makeGetAdjVerbAdv(createContainer(crypto.randomUUID())).execute({
+      pageSize,
+      page,
+    }),
 );
 
 /**

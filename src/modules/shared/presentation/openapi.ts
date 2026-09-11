@@ -52,6 +52,7 @@ import {
   saveExtraVocabMarkBodySchema,
   saveExtraVocabProgressBodySchema,
 } from '@/modules/library/presentation/dto/extra-vocab-requests';
+import { adjVerbAdvQuerySchema } from '@/modules/library/presentation/dto/adj-verb-adv-requests';
 import { wordFamilyQuerySchema } from '@/modules/library/presentation/dto/word-family-requests';
 import {
   demoSpeechBodySchema,
@@ -347,6 +348,15 @@ registry.registerPath({
     'Set or clear a Learning / Known mark on one Extra vocabulary headword. Null status removes the mark. The word must exist in the Extra vocabulary corpus.',
   request: { body: { content: { 'application/json': { schema: saveExtraVocabMarkBodySchema } } } },
   responses: ok(z.unknown(), 'The mark and the updated Learning / Known counts.'),
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/api/v1/library/adj-verb-adv',
+  summary:
+    'A numbered page of adjective, verb and adverb study cards — twenty-five entries, Bangla meaning and an example sentence. A separate list from Extra vocabulary and Saifur’s.',
+  request: { query: adjVerbAdvQuerySchema },
+  responses: ok(z.unknown(), 'The page, the letter and part-of-speech indexes, and the page number.'),
 });
 
 registry.registerPath({
