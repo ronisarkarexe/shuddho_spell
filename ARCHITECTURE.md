@@ -269,6 +269,9 @@ Recorded as decisions in section 5. Same convention, same wiring.
 | `CERTIFICATE_REPOSITORY` | `ICertificateRepository` | certificates | 12 |
 | `SAIFURS_SOURCE` | `ISaifursSource` | library | 13 |
 | `SAIFURS_PROGRESS_REPOSITORY` | `ISaifursProgressRepository` | library | 13 |
+| `EXTRA_VOCAB_SOURCE` | `IExtraVocabSource` | library | 13 |
+| `EXTRA_VOCAB_PROGRESS_REPOSITORY` | `IExtraVocabProgressRepository` | library | 13 |
+| `EXTRA_VOCAB_MARK_REPOSITORY` | `IExtraVocabMarkRepository` | library | 13 |
 | `UNIVERSITY_CATALOG` | `IUniversityCatalog` | education | — |
 
 ### Application ports — `application/ports/`
@@ -342,6 +345,8 @@ Enumerated columns are `text` + a `check` constraint mirroring the TypeScript co
 | `009` | `rate_limits` | infrastructure | service role only (see decision D6) |
 | `023` | `formal_informal_progress` | learner | own `profile_id` · no client write |
 | `024` | `saifurs_vocabulary_progress` | learner | own `profile_id` · no client write |
+| `025` | `extra_vocabulary_progress` | learner | own `profile_id` · no client write |
+| `025` | `extra_vocabulary_marks` | learner | own `profile_id` · no client write |
 
 Every learner table carries
 `profile_id uuid not null references learner_profiles(id) on delete cascade`.
@@ -1497,6 +1502,9 @@ The twelve tenses, the five forms, be / have / do, the passive, modals, gerunds,
 
 **D85 — Education is a public catalogue, country-first, not a learner feature (user request, 2026-09-10).**
 A family researching US universities is not signed in, so `/education` sits outside every authenticated route group and is named in `proxy.ts` the way `/` is. The hundred universities are a compiled module behind `IUniversityCatalog`, wired like grammar: no cookies, no database, no request-scoped container. Destinations are a country list with `available: false` for the UK, Canada and Australia — the switcher is real before the files are, so a second country is another seed file rather than a redesigned page. Official names, cities, states and `.edu` sites are facts. GPA floors, English scores, tuition and living costs are typical published ranges, flagged `needsReview`, converted to taka at a documented snapshot rate — they are not a live admissions scrape, and the screen says so.
+
+**D86 — Extra vocabulary is a seventh corpus, with Learning / Known marks; Saifur's stays a book (user request, 2026-09-11).**
+The marks a learner asked for — which words they are studying — do not live on Saifur's. Saifur's at `/library/saifurs` stays the admission-style book: twenty-five to a page, British or American speech, Read or Learn, a page bookmark, no per-word mark. Extra vocabulary is a separate academic list in `content/extra-vocabulary/`, the same card shape, its own rail item at `/library/extra-vocab`, its own bookmark in `extra_vocabulary_progress`, and Learning / Known rows in `extra_vocabulary_marks`. Folding the two lists together would mix GRE-style admission words with AWL-style academic words and put study marks on a book the learner did not ask to mark.
 
 ### Open — needs the user, not me
 

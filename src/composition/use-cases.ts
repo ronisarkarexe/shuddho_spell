@@ -60,6 +60,10 @@ import { SaveFormalInformalProgressUseCase } from '@/modules/library/application
 import { GetSaifursVocabularyUseCase } from '@/modules/library/application/use-cases/get-saifurs-vocabulary';
 import { GetSaifursProgressUseCase } from '@/modules/library/application/use-cases/get-saifurs-progress';
 import { SaveSaifursProgressUseCase } from '@/modules/library/application/use-cases/save-saifurs-progress';
+import { GetExtraVocabUseCase } from '@/modules/library/application/use-cases/get-extra-vocab';
+import { GetExtraVocabProgressUseCase } from '@/modules/library/application/use-cases/get-extra-vocab-progress';
+import { SaveExtraVocabProgressUseCase } from '@/modules/library/application/use-cases/save-extra-vocab-progress';
+import { SaveExtraVocabMarkUseCase } from '@/modules/library/application/use-cases/save-extra-vocab-mark';
 import { GetWordFamiliesUseCase } from '@/modules/library/application/use-cases/get-word-families';
 import { ScoreDemoSpeechUseCase } from '@/modules/library/application/use-cases/score-demo-speech';
 import { GetLibraryPageUseCase } from '@/modules/library/application/use-cases/get-library-page';
@@ -616,6 +620,26 @@ export function makeGetSaifursProgress(c: IContainer): GetSaifursProgressUseCase
 
 export function makeSaveSaifursProgress(c: IContainer): SaveSaifursProgressUseCase {
   return new SaveSaifursProgressUseCase(c.learnerProfiles, c.saifursProgress, c.saifurs);
+}
+
+export function makeGetExtraVocab(c: IContainer): GetExtraVocabUseCase {
+  return new GetExtraVocabUseCase(c.extraVocab, c.learnerProfiles, c.extraVocabMarks);
+}
+
+export function makeGetExtraVocabProgress(c: IContainer): GetExtraVocabProgressUseCase {
+  return new GetExtraVocabProgressUseCase(c.learnerProfiles, c.extraVocabProgress, c.extraVocab);
+}
+
+export function makeSaveExtraVocabProgress(c: IContainer): SaveExtraVocabProgressUseCase {
+  return new SaveExtraVocabProgressUseCase(
+    c.learnerProfiles,
+    c.extraVocabProgress,
+    c.extraVocab,
+  );
+}
+
+export function makeSaveExtraVocabMark(c: IContainer): SaveExtraVocabMarkUseCase {
+  return new SaveExtraVocabMarkUseCase(c.learnerProfiles, c.extraVocabMarks, c.extraVocab);
 }
 
 /**
